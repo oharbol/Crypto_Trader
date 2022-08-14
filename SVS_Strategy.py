@@ -1,7 +1,5 @@
-import json
 import config, requests
 import alpaca_trade_api as tradeapi
-from alpaca_trade_api.stream import Stream
 import datetime
 #from Stock_Trader import *
 import time
@@ -17,14 +15,14 @@ account = api.get_account()
 
 #variables for historical data
 symbols = ["BTCUSD"]
-timeframe = "15Min"
+timeframe = "5Min"
 # start = (datetime.datetime.now()+ datetime.timedelta(days=-1)).strftime("%Y-%m-%d") #"2022-08-12"
 # end = datetime.datetime.now().strftime("%Y-%m-%d") #"2022-08-13"
 
 #global variables for stream
 #open, high, low, close = 0,0,0,0
 temp = 0
-interval = 15
+interval = 5
 prev_vol = 0
 
 
@@ -81,19 +79,13 @@ def trade_buy(dollars, symbol):
         notional= dollars,
         side="buy",
         type='market',
-        time_in_force='day',
+        time_in_force='gtc',
     )
     print("Bought ${} of {}!\n".format(dollars, symbol))
 
 #Sell crypto of x qty
-def trade_sell(shares, unrealized_pl, symbol):
-    api.submit_order(
-        symbol=symbol,
-        qty= shares,
-        side="sell",
-        type='market',
-        time_in_force='day',
-    )
+def trade_sell(unrealized_pl, symbol):
+    api.close_position(symbols[0])
     print("Sold ${} of {}!\n".format(unrealized_pl, symbol))
 
 #at the start of a 5 minute bar
@@ -105,6 +97,7 @@ async def bar_callback(bar):
     if(temp % interval == 0): #
         temp = 0
         btc_bars = get_hist(bar.symbol)
+        print(btc_bars)
         quotes_list = convert_bars(btc_bars)
         ind = get_indicators(quotes_list)
         # ind = get_indicators(convert_bars(get_hist()))
@@ -127,7 +120,7 @@ def print_bars(stuff, symbol):
     if(len(api.list_positions()) > 0):
         #sell
         if(direction == "red"):
-            trade_sell(api.list_positions()[0].qty, api.list_positions()[0].unrealized_pl, symbol)
+            trade_sell(api.list_positions()[0].unrealized_pl, symbol)
     #buy
     #rule:
     #ADX above 25
@@ -137,7 +130,7 @@ def print_bars(stuff, symbol):
     #ADX above 25
     #Volume increase from previous tick
     #Bullish candle
-    elif(stuff["adx"] >= 25 and direction == "green" and (stuff["ema_50"] > stuff["ema_200"] or stuff["volume"] > prev_vol)):
+    elif(stuff["adx"] >= 25 and direction == "green" and stuff["ema_50"] > stuff["ema_200"]):
         trade_buy(api.get_account().equity, symbol)
     #otherwise hold
     else:
