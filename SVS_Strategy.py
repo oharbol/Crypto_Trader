@@ -15,7 +15,7 @@ account = api.get_account()
 
 #variables for historical data
 symbols = ["BTCUSD"]
-timeframe = "5Min"
+timeframe = "5Min" #15Min 1Hour
 # start = (datetime.datetime.now()+ datetime.timedelta(days=-1)).strftime("%Y-%m-%d") #"2022-08-12"
 # end = datetime.datetime.now().strftime("%Y-%m-%d") #"2022-08-13"
 
@@ -41,7 +41,7 @@ def get_hist(symbol):
 
 #gets the current day and previous day for indicators
 def get_time():
-    start = (datetime.datetime.now()+ datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
+    start = (datetime.datetime.now() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
     end = datetime.datetime.now().strftime("%Y-%m-%d")
     return start, end
 
@@ -97,7 +97,7 @@ async def bar_callback(bar):
     if(temp % interval == 0): #
         temp = 0
         btc_bars = get_hist(bar.symbol)
-        print(btc_bars)
+        #print(btc_bars)
         quotes_list = convert_bars(btc_bars)
         ind = get_indicators(quotes_list)
         # ind = get_indicators(convert_bars(get_hist()))
@@ -133,8 +133,8 @@ def print_bars(stuff, symbol):
     elif(stuff["adx"] >= 25 and direction == "green" and stuff["ema_50"] > stuff["ema_200"]):
         trade_buy(api.get_account().equity, symbol)
     #otherwise hold
-    else:
-        print("Hold!!!!!!!!!!!")
+    # else:
+    #     print("Hold!!!!!!!!!!!")
     
 
     #used for debugging
