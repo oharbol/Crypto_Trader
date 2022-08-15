@@ -1,25 +1,20 @@
 # Crypto_Trader
 
-## TODO
-- Add backtesting feature
-- Allow trading multiple crypto currencies
-- Allow testing on mulitiple time intervals
-
 ## How To Use Code
 Go into config.py and set the variables "API_KEY" and "SECRET_KEY" to your account's information. Once that is set, run:
 
     python SVS_Strategy.py
 
 
-Default outputs (5Min ticker):
+Default outputs (1Hour ticker):
 
 ```
-quote: BTCUSD - 2022-08-15 01:05:00
-open: 24391.26, high: 24396.00, low: 24363.00, close: 24385.00
+quote: BTCUSD - 2022-08-15 19:00:00
+open: 24146.28, high: 24158.00, low: 23980.00, close: 24056.00
 direction: red doji
-ema_50: 24324.13, ema_200: 24406.74
-adx: 19.23
-volume: 0.13
+ema_50: 24338.52, ema_200: 23960.51
+adx: 20.73
+volume: 84.05
 ```
 
 
@@ -30,8 +25,8 @@ This trading bot follows the [Simple Volume Strategy](https://www.youtube.com/wa
 
 The strategy follows these rules to enter long:
 - EMA 50 is greater than EMA 200
-- ADX is greater than 25
-- Volume is greater than previous tick
+- ADX is greater than 20 (edited from default 25)
+- Volume is greater than previous tick (Alpaca historical volume isn't reliable so this is scratched)
 - Bullish Heikin Ashi candle stick
 
 ## Alpaca Commission Fees
@@ -56,3 +51,9 @@ Source [Updated Price for Crypto Trading on Trading API](https://alpaca.markets/
 1. Code the stuff
 2. Test it out
 3. Profit???
+
+
+## TODO
+- [x] Allow trading multiple crypto currencies
+- [ ] Add backtesting feature
+- [ ] Allow testing on mulitiple time intervals

@@ -1,13 +1,11 @@
-import config, requests
+import config
 import alpaca_trade_api as tradeapi
 import datetime
 #from Stock_Trader import *
 import time
-import pandas as pd
 from stock_indicators.indicators.common import Quote
 from stock_indicators import indicators
-from alpaca_trade_api.common import URL
-from alpaca_trade_api.stream import Stream
+
 
 #create the connection to the api
 api = tradeapi.REST(config.API_KEY, config.SECRET_KEY, config.BASE_URL)
@@ -135,7 +133,7 @@ while(True):
     tn = datetime.datetime.now()
     time_min = 59 - tn.minute
     time_sec = 62 - tn.second
-    print(time_min, time_sec)
+    #print(time_min, time_sec)
     time.sleep(time_min * 60 + time_sec)
     
     #Loop through all 
