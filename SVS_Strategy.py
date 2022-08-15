@@ -14,16 +14,9 @@ api = tradeapi.REST(config.API_KEY, config.SECRET_KEY, config.BASE_URL)
 account = api.get_account()
 
 #variables for historical data
-symbols = ["BTCUSD"]
-timeframe = "5Min" #15Min 1Hour
-# start = (datetime.datetime.now()+ datetime.timedelta(days=-1)).strftime("%Y-%m-%d") #"2022-08-12"
-# end = datetime.datetime.now().strftime("%Y-%m-%d") #"2022-08-13"
-
-#global variables for stream
-#open, high, low, close = 0,0,0,0
-temp = 0
-interval = 5
-prev_vol = 0
+symbols = ["BTCUSD", "ETHUSD"] 
+timeframe = "1Hour" #1Hour
+risk = 1 / len(symbols)
 
 
 #grab historical data
@@ -41,7 +34,7 @@ def get_hist(symbol):
 
 #gets the current day and previous day for indicators
 def get_time():
-    start = (datetime.datetime.now() + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
+    start = (datetime.datetime.now() + datetime.timedelta(days=-10)).strftime("%Y-%m-%d")
     end = datetime.datetime.now().strftime("%Y-%m-%d")
     return start, end
 
@@ -73,7 +66,22 @@ def get_indicators(quotes_list):
 
 
 #Buy crypto with x amount of dollars
-def trade_buy(dollars, symbol):
+def trade_buy(equity, symbol):
+    #Figure out settled funds and percent of total are settled
+    total, dollars = 0, 0
+    for i in api.list_positions():
+        total += float(i.market_value)
+    settled = equity - total
+    percent_left = settled / equity
+    
+    #Buy with all of settled funds (-0.02% so that order can go through because dumb)
+    if(percent_left < risk):
+        dollars = settled * 0.98
+    #Otherwise buy risk amount
+    else:
+        dollars = settled * risk
+    
+    #API buy order
     api.submit_order(
         symbol=symbol,
         notional= dollars,
@@ -81,27 +89,12 @@ def trade_buy(dollars, symbol):
         type='market',
         time_in_force='gtc',
     )
-    print("Bought ${} of {}!\n".format(dollars, symbol))
+    print("\nBought ${} of {}!\n".format(dollars, symbol))
 
 #Sell crypto of x qty
 def trade_sell(unrealized_pl, symbol):
-    api.close_position(symbols[0])
-    print("Sold ${} of {}!\n".format(unrealized_pl, symbol))
-
-#at the start of a 5 minute bar
-async def bar_callback(bar):
-    if(bar.exchange == "CBSE"):
-        return
-    global temp, interval
-    temp += 1
-    if(temp % interval == 0): #
-        temp = 0
-        btc_bars = get_hist(bar.symbol)
-        #print(btc_bars)
-        quotes_list = convert_bars(btc_bars)
-        ind = get_indicators(quotes_list)
-        # ind = get_indicators(convert_bars(get_hist()))
-        print_bars(ind, bar.symbol)
+    api.close_position(symbol)
+    print("\nSold ${} of {}!\n".format(unrealized_pl, symbol))
 
 #print and buy
 def print_bars(stuff, symbol):
@@ -116,43 +109,40 @@ def print_bars(stuff, symbol):
     else:
         direction = "red doji"
     
-    #holding crypto
-    if(len(api.list_positions()) > 0):
-        #sell
-        if(direction == "red"):
-            trade_sell(api.list_positions()[0].unrealized_pl, symbol)
-    #buy
-    #rule:
-    #ADX above 25
-    #EMA_50 above EMA_200
-    #Bullish candle
-    #or.......
-    #ADX above 25
-    #Volume increase from previous tick
-    #Bullish candle
-    elif(stuff["adx"] >= 25 and direction == "green" and stuff["ema_50"] > stuff["ema_200"]):
-        trade_buy(api.get_account().equity, symbol)
-    #otherwise hold
-    # else:
-    #     print("Hold!!!!!!!!!!!")
-    
+    #holding crypto (only needed for first trade)
+    if(len(api.list_positions()) >= 1):
+        #are we holding a sellable amount of crypto?
+        if(float(api.list_positions()[0].qty) > 0.0001 and direction == "red"):
+            #sell
+            if(direction == "red"):
+                trade_sell(api.list_positions()[0].unrealized_pl, symbol)
+
+        #we are not holding a sellable amount of crypto
+        elif(stuff["adx"] >= 20 and direction == "green" and stuff["ema_50"] > stuff["ema_200"]):
+            trade_buy(float(api.get_account().equity), symbol)
+
+    elif(stuff["adx"] >= 20 and direction == "green" and stuff["ema_50"] > stuff["ema_200"]):
+        trade_buy(float(api.get_account().equity), symbol)
 
     #used for debugging
     print("quote: {} - {}\nopen: {}, high: {}, low: {}, close: {}\ndirection: {}\nema_50: {}, ema_200: {}\nadx: {}\nvolume: {}\n".format(
         symbol, stuff["date"], round(stuff["open"],2), round(stuff["high"],2), round(stuff["low"],2), round(stuff["close"],2), direction, round(stuff["ema_50"],2), round(stuff["ema_200"],2), round(stuff["adx"],2), round(stuff["volume"],2)))
 
-    #reset previous volume
-    prev_vol = stuff["volume"]
 
-
-# Initiate Class Instance
-stream = Stream(config.API_KEY,
-                config.SECRET_KEY,
-                base_url=config.BASE_URL,
-                data_feed='iex')  # <- replace to 'sip' if you have PRO subscription
-
-# subscribing to event
-for i in symbols:
-    stream.subscribe_crypto_bars(bar_callback, i)
-
-stream.run()
+#Trading Loop
+while(True):
+    #Every hour 
+    tn = datetime.datetime.now()
+    time_min = 59 - tn.minute
+    time_sec = 62 - tn.second
+    print(time_min, time_sec)
+    time.sleep(time_min * 60 + time_sec)
+    
+    #Loop through all 
+    for ticker in symbols:
+        btc_bars = get_hist(ticker)
+        #print(btc_bars)
+        quotes_list = convert_bars(btc_bars)
+        ind = get_indicators(quotes_list)
+        #Determine Order
+        print_bars(ind, ticker)
