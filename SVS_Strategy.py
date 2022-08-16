@@ -11,8 +11,18 @@ from stock_indicators import indicators
 api = tradeapi.REST(config.API_KEY, config.SECRET_KEY, config.BASE_URL)
 account = api.get_account()
 
+
+#Backtest Results from TV 1H for 8 months with 100% risk:
+#Note: Will need to create my own backtests as TV results and trades are different than mine
+#AAVEUSD  - 126,116.98 Acc: 55.43%
+#BTC      -   2,284.66 Acc: 41.48%
+#DOGEUSD  -   9,681.68 Acc: 46.18%
+#ETHUSD   -  12,429.29 Acc: 47.33%
+#NEARUSD  -   8,183.74 Acc: 48.25%
+#MATICUSD -  34,082.42 Acc: 50.92%
+
 #variables for historical data
-symbols = ["BTCUSD", "ETHUSD"] 
+symbols = ["BTCUSD", "ETHUSD"]
 timeframe = "1Hour" #1Hour
 risk = 1 / len(symbols)
 
@@ -27,6 +37,7 @@ def get_hist(symbol):
     btc_bars = btc_bars.drop(columns=["vwap", "trade_count", "exchange"])
     btc_bars = btc_bars.rename(columns={"timestamp": "date"})
     #btc_bars[["open", "high", "low", "close"]] = btc_bars[["open", "high", "low", "close"]].apply(lambda x: round(x, 2))
+    #print(btc_bars)
     return btc_bars
 
 
@@ -144,3 +155,5 @@ while(True):
         ind = get_indicators(quotes_list)
         #Determine Order
         print_bars(ind, ticker)
+
+#api.get_last_quote("BTCUSD")
