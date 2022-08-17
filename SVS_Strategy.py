@@ -14,7 +14,7 @@ account = api.get_account()
 #Backtest Results from TV 1H for 8 months with 100% risk:
 #Note: Will need to create my own backtests as TV results and trades are different than mine
 #AAVEUSD  - 126,116.98 Acc: 55.43%
-#BTC      -   2,284.66 Acc: 41.48%
+#BTCUSD   -   2,284.66 Acc: 41.48%
 #DOGEUSD  -   9,681.68 Acc: 46.18%
 #ETHUSD   -  12,429.29 Acc: 47.33%
 #NEARUSD  -   8,183.74 Acc: 48.25%
@@ -25,6 +25,33 @@ symbols = ["BTCUSD", "ETHUSD"]
 timeframe = "1Hour" #1Hour
 risk = 1 / len(symbols)
 
+#Dictionary of the minimum quantities required to sell
+#This could be found in the alpaca API but I can't find it at the moment
+sellable = {
+    "AAVEUSD": 0.01,
+    "ALGOUSD": 1,
+    "BATUSD" : 1,
+    "BTCUSD" : 0.0001,
+    "BCHUSD" : 0.001,
+    "LINKUSD": 0.1,
+    "DAIUSD" : 0.1,
+    "DOGEUSD" : 1,
+    "ETHUSD" : 0.001,
+    "GRTUSD" : 1,
+    "LTCUSD" : 0.01,
+    "MKRUSD" : 0.001,
+    "MATICUSD" : 10, #<- you are pain
+    "NEARUSD" : 0.1,
+    "PAXGUSD" : 0.0001,
+    "SHIBUSD" : 0.1,
+    "SOLUSD" : 0.1,
+    "SUSHIUSD" : 100000, #<- you are also pain
+    "USDTUSD" : 0.01,
+    "TRXUSD" : 1,
+    "UNIUSD" : 0.1,
+    "WBTCUSD" : 0.0001,
+    "YFIUSD" : 0.001
+}
 
 #Get historical data
 def get_hist(symbol):
@@ -104,9 +131,19 @@ def trade_buy(equity, symbol):
 
 #Sell entire position of crypto
 def trade_sell(unrealized_pl, symbol):
-    #It should be noted that alpaca will only sell >= 0.0001 shares of a given
-    # crypto position
-    api.close_position(symbol)
+    #Sell partial amount
+    if(symbol == "MATICUSD" or symbol == "SUSHIUSD"):
+        #API sell order
+        api.submit_order(
+            symbol=symbol,
+            qty= (api.get_position().qty // sellable[symbol]) * sellable[symbol],
+            side="sell",
+            type='market',
+            time_in_force='gtc',
+        )
+    #Sell "entire" postion
+    else:
+        api.close_position(symbol)
     print("\nSold profit ${} of {}!\n".format(unrealized_pl, symbol))
 
 #print and buy
@@ -128,7 +165,7 @@ def print_bars(stuff, symbol):
     #Check if holding given symbol
     if(symbol in positions):
         #Is account holding a sellable amount of crypto?
-        if(float(api.get_position(symbol).qty) > 0.0001):
+        if(float(api.get_position(symbol).qty) >= sellable[symbol]): #0.0001
             #Sell
             if(direction == "red"):
                 trade_sell(api.get_position(symbol).unrealized_pl, symbol)
@@ -143,8 +180,8 @@ def print_bars(stuff, symbol):
         trade_buy(float(api.get_account().equity), symbol)
 
     #Used for debugging
-    print("quote: {} - {}\nopen: {}, high: {}, low: {}, close: {}\ndirection: {}\nema_50: {}, ema_200: {}\nadx: {}\nvolume: {}\n".format(
-        symbol, stuff["date"], round(stuff["open"],2), round(stuff["high"],2), round(stuff["low"],2), round(stuff["close"],2), direction, round(stuff["ema_50"],2), round(stuff["ema_200"],2), round(stuff["adx"],2), round(stuff["volume"],2)))
+    # print("quote: {} - {}\nopen: {}, high: {}, low: {}, close: {}\ndirection: {}\nema_50: {}, ema_200: {}\nadx: {}\nvolume: {}\n".format(
+    #     symbol, stuff["date"], round(stuff["open"],2), round(stuff["high"],2), round(stuff["low"],2), round(stuff["close"],2), direction, round(stuff["ema_50"],2), round(stuff["ema_200"],2), round(stuff["adx"],2), round(stuff["volume"],2)))
 
 
 #Trading Loop
