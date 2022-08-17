@@ -21,9 +21,12 @@ account = api.get_account()
 #MATICUSD -  34,082.42 Acc: 50.92%
 
 #Variables for historical data
+
+#Add or remove crypto to trade from symbols
 symbols = ["BTCUSD", "ETHUSD"]
 timeframe = "1Hour" #1Hour
 risk = 1 / len(symbols)
+round_var = 3
 
 #Dictionary of the minimum quantities required to sell
 #This could be found in the alpaca API but I can't find it at the moment
@@ -117,7 +120,7 @@ def trade_buy(equity, symbol):
         dollars = settled
     #Otherwise buy risk amount
     else:
-        dollars = settled * risk
+        dollars = equity * risk
     
     #API buy order
     api.submit_order(
@@ -136,7 +139,7 @@ def trade_sell(unrealized_pl, symbol):
         #API sell order
         api.submit_order(
             symbol=symbol,
-            qty= (api.get_position().qty // sellable[symbol]) * sellable[symbol],
+            qty= (float(api.get_position(symbol).qty) // sellable[symbol]) * sellable[symbol],
             side="sell",
             type='market',
             time_in_force='gtc',
@@ -181,7 +184,7 @@ def print_bars(stuff, symbol):
 
     #Used for debugging
     # print("quote: {} - {}\nopen: {}, high: {}, low: {}, close: {}\ndirection: {}\nema_50: {}, ema_200: {}\nadx: {}\nvolume: {}\n".format(
-    #     symbol, stuff["date"], round(stuff["open"],2), round(stuff["high"],2), round(stuff["low"],2), round(stuff["close"],2), direction, round(stuff["ema_50"],2), round(stuff["ema_200"],2), round(stuff["adx"],2), round(stuff["volume"],2)))
+    #     symbol, stuff["date"], round(stuff["open"],round_var), round(stuff["high"],round_var), round(stuff["low"],round_var), round(stuff["close"],round_var), direction, round(stuff["ema_50"],round_var), round(stuff["ema_200"],round_var), round(stuff["adx"],round_var), round(stuff["volume"],round_var)))
 
 
 #Trading Loop
