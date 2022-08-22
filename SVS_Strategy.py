@@ -23,7 +23,7 @@ account = api.get_account()
 #Variables for historical data
 
 #Add or remove crypto to trade from symbols
-symbols = ["BTCUSD", "ETHUSD"]
+symbols = ["BTCUSD", "ETHUSD", "MATICUSD"]
 timeframe = "1Hour" #1Hour
 risk = 1 / len(symbols)
 round_var = 3
@@ -130,11 +130,11 @@ def trade_buy(equity, symbol):
         type='market',
         time_in_force='gtc',
     )
-    print("\nBought ${} of {}!\n".format(dollars, symbol))
+    print("\nBought ${} of {}! At {}\n".format(dollars, symbol, datetime.datetime.now()))
 
 #Sell entire position of crypto
 def trade_sell(unrealized_pl, symbol):
-    #Sell partial amount
+    #Sell incremental amount of assets
     if(symbol == "MATICUSD" or symbol == "SUSHIUSD"):
         #API sell order
         api.submit_order(
@@ -144,10 +144,10 @@ def trade_sell(unrealized_pl, symbol):
             type='market',
             time_in_force='gtc',
         )
-    #Sell "entire" postion
+    #Sell all sellable assets
     else:
         api.close_position(symbol)
-    print("\nSold profit ${} of {}!\n".format(unrealized_pl, symbol))
+    print("\nSold profit ${} of {}! At {}\n".format(unrealized_pl, symbol, datetime.datetime.now()))
 
 #print and buy
 def print_bars(stuff, symbol):
@@ -183,8 +183,8 @@ def print_bars(stuff, symbol):
         trade_buy(float(api.get_account().equity), symbol)
 
     #Used for debugging
-    # print("quote: {} - {}\nopen: {}, high: {}, low: {}, close: {}\ndirection: {}\nema_50: {}, ema_200: {}\nadx: {}\nvolume: {}\n".format(
-    #     symbol, stuff["date"], round(stuff["open"],round_var), round(stuff["high"],round_var), round(stuff["low"],round_var), round(stuff["close"],round_var), direction, round(stuff["ema_50"],round_var), round(stuff["ema_200"],round_var), round(stuff["adx"],round_var), round(stuff["volume"],round_var)))
+    print("quote: {} - {}\nopen: {}, high: {}, low: {}, close: {}\ndirection: {}\nema_50: {}, ema_200: {}\nadx: {}\nvolume: {}\n".format(
+        symbol, stuff["date"], round(stuff["open"],round_var), round(stuff["high"],round_var), round(stuff["low"],round_var), round(stuff["close"],round_var), direction, round(stuff["ema_50"],round_var), round(stuff["ema_200"],round_var), round(stuff["adx"],round_var), round(stuff["volume"],round_var)))
 
 
 #Trading Loop
@@ -193,7 +193,8 @@ while(True):
     tn = datetime.datetime.now()
     time_min = 59 - tn.minute
     time_sec = 62 - tn.second
-
+    #For debugging purposes only
+    print("{}.{}\n".format(time_min, time_sec))
     #Sleep until 2 seconds after hour
     time.sleep(time_min * 60 + time_sec)
 
