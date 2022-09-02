@@ -41,15 +41,17 @@ volume: 84.05
 ## Overview and Strategy
 As of August 20th 2022, backtesting has shown that the Simple Volume Strategy (linked below) is somewhat profitable during extremely bullish market periods, while generally horizontal movements and bearish treands will yield unprofitable results.
 
-### - Issues
+### Issues
 The biggest issues that arise with creating a trading bot are:
 - Achieving a high level of winning trades
 - Gaining above the 0.3% Alpaca crypto commission on every trade
 
 The Simple Volume Strategy is predicted to average a 52% win rate on a 5-Minute time frame. Utilizing the exclusive script by the author on Trading View, I have found that only the 1-Hour time frame can can produce enough consistent profits above the 0.3% Alpaca commission. While the strategy tester has shown a general uptrend of profits, my backtesting did not yield the same results. This is because my strategy has followed the trading strategy exactly while the one on Trading View forgoes the EMA crossing rule. 
 
-### - The Fix
-To make this bot profitable, I need to find a balance between creating high levels of accuracy (winning trades) and trades that yield profits above the Alpaca commission rates during horizontal moving and bearish markets. Utilizing a Deep Q Neural Network. I have hopes that a neural network might be able to figure out a better way to trade than the hard coded bot.
+### Potential Fixes
+To make this trading strategy profitable, I need to find a balance between creating high levels of accuracy (winning trades) and trades that yield profits above the Alpaca commission rates during horizontal moving and bearish markets. 
+- __Utilizing a Deep Q Neural Network:__ I have hopes that a neural network might be able to figure out a better way to trade than the hard coded bot.
+- __Addiding Optimizations and Fine Tuning Strategy:__ Adding the given optimizations and then playing around with different variables could lead to greater accuracy/profit.
 
 ## Alpaca Commission Fees
 
@@ -75,5 +77,6 @@ Source: [Updated Price for Crypto Trading on Trading API](https://alpaca.markets
 - [x] Allow trading multiple crypto currencies
 - [x] Add backtesting feature
 - [ ] Allow testing on mulitiple time intervals
+- [ ] Add optimizations to bot version
 - [ ] Add DQN and train models
 - [ ] Compare RL agent against bot
