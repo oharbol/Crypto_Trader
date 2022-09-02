@@ -2,7 +2,8 @@
 
 ## Requirements
 - Pandas
-- Alpaca Trade API
+- ~~[Alpaca Trade API](https://github.com/alpacahq/alpaca-trade-api-python)~~ <-- Depricated
+- [Alpaca-py](https://github.com/alpacahq/alpaca-py)
 - [Stock.Indicators.Python](https://github.com/DaveSkender/Stock.Indicators.Python) (created by DaveSkender)
 
 ## Trading Rule
@@ -12,6 +13,13 @@ This trading bot follows the [Simple Volume Strategy](https://www.youtube.com/wa
 - ADX is greater than 20 (edited from default 25)
 - Volume is greater than previous tick (Alpaca historical volume isn't reliable so this is scratched)
 - Bullish Heikin Ashi candle stick
+
+### Optimizations
+- Wait for price to touch the 50 EMA
+- Use Wave Trend Indicator
+- Use RSI to gauge pullbacks
+- View higher time frame
+- Trade when volume is above its own MA
 
 ## How To Use Code
 Go into config.py and set the variables "API_KEY" and "SECRET_KEY" to your account's information. Once that is set, run:
@@ -58,7 +66,7 @@ The fees that alpaca places on total currency traded is somewhat cutthroat. This
 |  7   | >50,000,000   | 0.125% |
 |  8   | >100,000,000  | 0.125%  |
 
-Source [Updated Price for Crypto Trading on Trading API](https://alpaca.markets/blog/updated-pricing-for-crypto-trading-on-trading-api/)
+Source: [Updated Price for Crypto Trading on Trading API](https://alpaca.markets/blog/updated-pricing-for-crypto-trading-on-trading-api/)
 
 ## 1-Hour Results
 ![Results](data_BTC.png)

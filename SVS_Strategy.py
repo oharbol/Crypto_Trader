@@ -1,14 +1,22 @@
 import config
-import alpaca_trade_api as tradeapi
+#import alpaca_trade_api as tradeapi <---- Depricated
 import datetime
 import time
 from stock_indicators.indicators.common import Quote
 from stock_indicators import indicators
 
+from alpaca.data.historical import CryptoHistoricalDataClient
+from alpaca.data.requests import CryptoBarsRequest
+from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
+from alpaca.trading.client import TradingClient
+from alpaca.trading.requests import MarketOrderRequest
+from alpaca.trading.enums import OrderSide, TimeInForce
+
 
 #Create the connection to the api
-api = tradeapi.REST(config.API_KEY, config.SECRET_KEY, config.BASE_URL)
-account = api.get_account()
+# api = tradeapi.REST(config.API_KEY, config.SECRET_KEY, config.BASE_URL)
+# account = api.get_account()
+trading_client = TradingClient(config.API_KEY, config.SECRET_KEY)
 
 
 #Backtest Results from TV 1H for 8 months with 100% risk:
@@ -23,8 +31,8 @@ account = api.get_account()
 #Variables for historical data
 
 #Add or remove crypto to trade from symbols
-symbols = ["BTCUSD", "ETHUSD", "MATICUSD"]
-timeframe = "1Hour" #1Hour
+symbols = ["BTC/USD"]
+timeframe = TimeFrameUnit.Hour#"1Hour" #1Hour
 risk = 1 / len(symbols)
 round_var = 3
 
@@ -58,8 +66,18 @@ sellable = {
 
 #Get historical data
 def get_hist(symbol):
+    client = CryptoHistoricalDataClient()
+    #t = TimeFrame(5, TimeFrameUnit.Minute)
     start, end = get_time()
-    bars = api.get_crypto_bars(symbol, timeframe, start, end).df
+    request_params = CryptoBarsRequest(
+                        symbol_or_symbols=[symbol],
+                        timeframe=timeframe,
+                        start=start,
+                        end=end
+                 )
+    bars = bars = client.get_crypto_bars(request_params)
+    #bars = api.get_crypto_bars(symbol, timeframe, start, end).df
+    bars = bars.df
     bars = bars.reset_index(drop=False)
     bars = bars.drop(bars[bars.exchange != "FTXU"].index)
     bars = bars.reset_index(drop=True)
@@ -107,10 +125,10 @@ def trade_buy(equity, symbol):
     dollars = 0
 
     #Settled funds in account
-    settled = float(api.get_account().non_marginable_buying_power)
+    settled = float(trading_client.get_account().non_marginable_buying_power)
 
     #Remove unrealized gains from total equity
-    for i in api.list_positions():
+    for i in trading_client.get_all_positions():
         equity -= abs(float(i.unrealized_pl))
     #Percent of total equity is settled funds
     percent_left = settled / equity
@@ -123,13 +141,22 @@ def trade_buy(equity, symbol):
         dollars = equity * risk
     
     #API buy order
-    api.submit_order(
-        symbol=symbol,
-        notional= dollars,
-        side="buy",
-        type='market',
-        time_in_force='gtc',
-    )
+    # api.submit_order(
+    #     symbol=symbol,
+    #     notional= dollars,
+    #     side="buy",
+    #     type='market',
+    #     time_in_force='gtc',
+    # )
+    market_order_data = MarketOrderRequest(
+                    symbol=symbol,
+                    notional=dollars,
+                    side=OrderSide.BUY,
+                    time_in_force=TimeInForce.GTC,
+                )
+    trading_client.submit_order(
+                order_data=market_order_data
+                )
     print("\nBought ${} of {}! At {}\n".format(dollars, symbol, datetime.datetime.now()))
 
 #Sell entire position of crypto
@@ -137,16 +164,25 @@ def trade_sell(unrealized_pl, symbol):
     #Sell incremental amount of assets
     if(symbol == "MATICUSD" or symbol == "SUSHIUSD"):
         #API sell order
-        api.submit_order(
-            symbol=symbol,
-            qty= (float(api.get_position(symbol).qty) // sellable[symbol]) * sellable[symbol],
-            side="sell",
-            type='market',
-            time_in_force='gtc',
-        )
+    #     api.submit_order(
+    #         symbol=symbol,
+    #         qty= (float(api.get_position(symbol).qty) // sellable[symbol]) * sellable[symbol],
+    #         side="sell",
+    #         type='market',
+    #         time_in_force='gtc',
+    #     )
+        market_order_data = MarketOrderRequest(
+                        symbol=symbol,
+                        qty= (float(trading_client.get_open_position(symbol).qty) // sellable[symbol]) * sellable[symbol],
+                        side=OrderSide.SELL,
+                        time_in_force=TimeInForce.GTC,
+                    )
+        trading_client.submit_order(
+                    order_data=market_order_data
+                    )
     #Sell all sellable assets
     else:
-        api.close_position(symbol)
+        trading_client.close_position(symbol)
     print("\nSold profit ${} of {}! At {}\n".format(unrealized_pl, symbol, datetime.datetime.now()))
 
 #print and buy
@@ -163,24 +199,24 @@ def print_bars(stuff, symbol):
         direction = "red doji"
     
     #Get all cypto held
-    positions = [i.symbol for i in api.list_positions()]
+    positions = [i.symbol for i in trading_client.get_all_positions()]
     
     #Check if holding given symbol
     if(symbol in positions):
         #Is account holding a sellable amount of crypto?
-        if(float(api.get_position(symbol).qty) >= sellable[symbol]): #0.0001
+        if(float(trading_client.get_open_position(symbol).qty) >= sellable[symbol]): #0.0001
             #Sell
             if(direction == "red"):
-                trade_sell(api.get_position(symbol).unrealized_pl, symbol)
+                trade_sell(trading_client.get_open_position(symbol).unrealized_pl, symbol)
 
         #Account not holding a sellable amount of crypto
         elif(stuff["adx"] >= 20 and direction == "green" and stuff["ema_50"] > stuff["ema_200"]):
             #Buy
-            trade_buy(float(api.get_account().equity), symbol)
+            trade_buy(float(trading_client.get_account().equity), symbol) 
 
     #Only used once when no positions are held
     elif(stuff["adx"] >= 20 and direction == "green" and stuff["ema_50"] > stuff["ema_200"]):
-        trade_buy(float(api.get_account().equity), symbol)
+        trade_buy(float(trading_client.get_account().equity), symbol)
 
     #Used for debugging
     print("quote: {} - {}\nopen: {}, high: {}, low: {}, close: {}\ndirection: {}\nema_50: {}, ema_200: {}\nadx: {}\nvolume: {}\n".format(
