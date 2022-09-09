@@ -71,7 +71,7 @@ The fees that alpaca places on total currency traded is somewhat cutthroat. This
 Source: [Updated Price for Crypto Trading on Trading API](https://alpaca.markets/blog/updated-pricing-for-crypto-trading-on-trading-api/)
 
 ## 1-Hour Results
-![Results](data_BTC.png)
+![Results](data_BTC.PNG)
 
 ## TODO
 - [x] Allow trading multiple crypto currencies
