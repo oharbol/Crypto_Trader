@@ -319,7 +319,7 @@ class DQNAgent:
 #Gets the current day and previous day for indicators
 def get_time():
     start = (datetime.datetime.now() + datetime.timedelta(days=-10)).strftime("%Y-%m-%d")
-    end = datetime.datetime.now().strftime("%Y-%m-%d")
+    end = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     return start, end
 
 #Get historical data
