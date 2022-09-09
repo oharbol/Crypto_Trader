@@ -136,12 +136,12 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 
-# no keys required for crypto data
+#no keys required for crypto data
 client = CryptoHistoricalDataClient()
 t = TimeFrame(5, TimeFrameUnit.Minute)
 request_params = CryptoBarsRequest(
                         symbol_or_symbols=["BTC/USD"],
-                        timeframe=t,
+                        timeframe=TimeFrame(1, TimeFrameUnit.Hour),
                         start="2022-08-01"
                  )
 
@@ -149,23 +149,23 @@ bars = client.get_crypto_bars(request_params)
 
 #print(bars.df.iloc[-1])
 #print(bars.df.head)
+print(bars.df.iloc[-1])
 
+# trading_client = TradingClient(config.API_KEY, config.SECRET_KEY)
 
-trading_client = TradingClient(config.API_KEY, config.SECRET_KEY)
+# pos = trading_client.get_all_positions()
+# #trading_client.close_position("ETHUSD")
+# # preparing order data
+# market_order_data = MarketOrderRequest(
+#                       symbol="ETHUSD",
+#                       notional=100,
+#                       side=OrderSide.BUY,
+#                       time_in_force=TimeInForce.GTC
+#                   )
 
-pos = trading_client.get_all_positions()
-#trading_client.close_position("ETHUSD")
-# preparing order data
-market_order_data = MarketOrderRequest(
-                      symbol="ETHUSD",
-                      notional=100,
-                      side=OrderSide.BUY,
-                      time_in_force=TimeInForce.GTC
-                  )
-
-# # Market order
-market_order = trading_client.submit_order(
-                order_data=market_order_data
-                )
-trading_client.get_account().non_marginable_buying_power
-print(trading_client.get_open_position("ETHUSD"))
+# # # Market order
+# market_order = trading_client.submit_order(
+#                 order_data=market_order_data
+#                 )
+# trading_client.get_account().non_marginable_buying_power
+# print(trading_client.get_open_position("ETHUSD"))

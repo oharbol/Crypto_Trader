@@ -31,8 +31,8 @@ trading_client = TradingClient(config.API_KEY, config.SECRET_KEY)
 #Variables for historical data
 
 #Add or remove crypto to trade from symbols
-symbols = ["BTC/USD"]
-timeframe = TimeFrameUnit.Hour#"1Hour" #1Hour
+symbols = ["BTC/USD", "ETH/USD", "MATIC/USD"]
+timeframe = TimeFrame(1, TimeFrameUnit.Hour)
 risk = 1 / len(symbols)
 round_var = 3
 
@@ -79,9 +79,10 @@ def get_hist(symbol):
     #bars = api.get_crypto_bars(symbol, timeframe, start, end).df
     bars = bars.df
     bars = bars.reset_index(drop=False)
-    bars = bars.drop(bars[bars.exchange != "FTXU"].index)
+    #print(bars)
+    #bars = bars.drop(bars[bars.exchange != "FTXU"].index)
     bars = bars.reset_index(drop=True)
-    bars = bars.drop(columns=["vwap", "trade_count", "exchange"])
+    bars = bars.drop(columns=["vwap", "trade_count"])
     bars = bars.rename(columns={"timestamp": "date"})
     return bars
 
