@@ -135,6 +135,8 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
+import numpy as np
+import pandas as pd
 
 #no keys required for crypto data
 client = CryptoHistoricalDataClient()
@@ -149,7 +151,9 @@ bars = client.get_crypto_bars(request_params)
 
 #print(bars.df.iloc[-1])
 #print(bars.df.head)
-print(bars.df.iloc[-1])
+a = bars.df.iloc[-1]
+x = pd.read_csv("data.csv")
+print(x)
 
 # trading_client = TradingClient(config.API_KEY, config.SECRET_KEY)
 
@@ -169,3 +173,5 @@ print(bars.df.iloc[-1])
 #                 )
 # trading_client.get_account().non_marginable_buying_power
 # print(trading_client.get_open_position("ETHUSD"))
+x = np.asarray(a).astype('float32')
+print(type(x.tolist()))

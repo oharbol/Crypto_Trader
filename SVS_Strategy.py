@@ -31,7 +31,8 @@ trading_client = TradingClient(config.API_KEY, config.SECRET_KEY)
 #Variables for historical data
 
 #Add or remove crypto to trade from symbols
-symbols = ["BTC/USD", "ETH/USD", "MATIC/USD"]
+symbols = ["BTCUSD", "ETHUSD", "MATICUSD"]
+names = ["BTCUSD", "ETHUSD", "MATICUSD"]
 timeframe = TimeFrame(1, TimeFrameUnit.Hour)
 risk = 1 / len(symbols)
 round_var = 3
@@ -70,7 +71,7 @@ def get_hist(symbol):
     #t = TimeFrame(5, TimeFrameUnit.Minute)
     start, end = get_time()
     request_params = CryptoBarsRequest(
-                        symbol_or_symbols=[symbol],
+                        symbol_or_symbols=[symbol[:-3] + "/USD"],
                         timeframe=timeframe,
                         start=start,
                         end=end
@@ -201,7 +202,13 @@ def print_bars(stuff, symbol):
     
     #Get all cypto held
     positions = [i.symbol for i in trading_client.get_all_positions()]
-    
+    # names = []
+    # for i in positions:
+    #     print(i)
+    #     names.append(i[:-3] + "/USD")
+    #print(positions)
+    #TODO: Add "/" before "USD" in position names
+
     #Check if holding given symbol
     if(symbol in positions):
         #Is account holding a sellable amount of crypto?
