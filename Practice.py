@@ -1,5 +1,6 @@
 # import json
-import config, requests
+# import config, requests
+# import keras
 # import alpaca_trade_api as tradeapi
 # from alpaca_trade_api.stream import Stream
 # from datetime import datetime
@@ -129,31 +130,34 @@ import config, requests
 
 # #print(datetime.fromtimestamp(1660414320))
 
-from alpaca.data.historical import CryptoHistoricalDataClient
-from alpaca.data.requests import CryptoBarsRequest
-from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
-from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import MarketOrderRequest
-from alpaca.trading.enums import OrderSide, TimeInForce
+# from alpaca.data.historical import CryptoHistoricalDataClient
+# from alpaca.data.requests import CryptoBarsRequest
+# from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
+# from alpaca.trading.client import TradingClient
+# from alpaca.trading.requests import MarketOrderRequest
+# from alpaca.trading.enums import OrderSide, TimeInForce
 import numpy as np
-import pandas as pd
+import keras
 
+state_file = open("./TV_BTC_Analysis_4h.csv")
+thingy = next(state_file).split(",")
+thingy = [np.float(x) for x in thingy]
+#print(thingy)
+# print(keras.utils.to_categorical(thingy[1:], num_classes=3).reshape((78,)))
+print(np.append(thingy, [1,1]))
 #no keys required for crypto data
-client = CryptoHistoricalDataClient()
-t = TimeFrame(5, TimeFrameUnit.Minute)
-request_params = CryptoBarsRequest(
-                        symbol_or_symbols=["BTC/USD"],
-                        timeframe=TimeFrame(1, TimeFrameUnit.Hour),
-                        start="2022-08-01"
-                 )
+# client = CryptoHistoricalDataClient()
+# t = TimeFrame(5, TimeFrameUnit.Minute)
+# request_params = CryptoBarsRequest(
+#                         symbol_or_symbols=["BTC/USD"],
+#                         timeframe=TimeFrame(1, TimeFrameUnit.Hour),
+#                         start="2022-08-01"
+#                  )
 
-bars = client.get_crypto_bars(request_params)
+# bars = client.get_crypto_bars(request_params)
 
 #print(bars.df.iloc[-1])
 #print(bars.df.head)
-a = bars.df.iloc[-1]
-x = pd.read_csv("data.csv")
-print(x)
 
 # trading_client = TradingClient(config.API_KEY, config.SECRET_KEY)
 
@@ -173,5 +177,5 @@ print(x)
 #                 )
 # trading_client.get_account().non_marginable_buying_power
 # print(trading_client.get_open_position("ETHUSD"))
-x = np.asarray(a).astype('float32')
-print(type(x.tolist()))
+
+# print(keras.utils.to_categorical([0,1,2], num_classes=3))

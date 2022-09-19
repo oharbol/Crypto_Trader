@@ -11,7 +11,7 @@ TIMEFRAME = TimeFrame(1, TimeFrameUnit.Hour)
 
 #Gets the current day and previous day for indicators
 def get_time():
-    start = (datetime.datetime.now() + datetime.timedelta(days=-10)).strftime("%Y-%m-%d")
+    start = "2021-07-01"
     end = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     return start, end
 
@@ -83,4 +83,4 @@ bars["adx"], bars["ema_50"], bars["ema_200"], bars["open_ha"], bars["high_ha"], 
 #remove all NaN 
 bars = bars.dropna()
 
-bars.df.to_csv("Data.csv")
+bars.to_csv("Data.csv", index=False)

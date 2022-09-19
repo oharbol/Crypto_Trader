@@ -23,9 +23,10 @@ from stock_indicators import indicators
 
 LOAD_MODEL = None#"models/7210ep__1X64_2X64_stock_1____29.47max___22.12avg__221.21min.model"#"models/3000ep__2X64_stock_0_____0.92max____0.91avg____0.90min.model" #None #Or None
 
-TICKER = "BTC/USD"
+TICKER = "BTC"
+TIME = "1m"
 
-timeframe = TimeFrame(1, TimeFrameUnit.Hour)
+#timeframe = TimeFrame(1, TimeFrameUnit.Hour)
 bars_index = 0
 
 DISCOUNT = 0.99
@@ -33,9 +34,10 @@ REPLAY_MEMORY_SIZE = 10_000  # How many last steps to keep for model training
 MIN_REPLAY_MEMORY_SIZE = 500  # Minimum number of steps in a memory to start training
 MINIBATCH_SIZE = 256  # How many steps (samples) to use for training
 UPDATE_TARGET_EVERY = 1  # Terminal states (end of episodes)
-MODEL_NAME = '1X64_2X64_stock_0'
+MODEL_NAME = '1X64_2X64_BTC'
 MIN_REWARD = 1000  # For model save
 MEMORY_FRACTION = 0.20
+INPUT_SIZE = 81
 
 # Environment settings
 EPISODES = 3000
@@ -47,21 +49,27 @@ MIN_EPSILON = 0.01
 #  Stats settings
 AGGREGATE_STATS_EVERY = 10  # episodes
 
+#change so convert works with input data
+def convert(input):
+  state = input.split(",")
+  state = [np.float(i) for i in state]
+  state = keras.utils.to_categorical(state, num_classes=3).reshape((INPUT_SIZE,))
+  return np.array(state)
+
 class StockEnv:
     ACTION_SPACE = 3
     #HOLD_PENALTY = 1.5
-    GAIN_MULT = 250
-    LOSS_MULT = 1000
+    # GAIN_MULT = 250
+    # LOSS_MULT = 1000
     holding = 0
     holding_price = 0
 
     #Fixed Rewards
     BUY_PENALTY = 3
-    GAIN_REWARD = 500
-    LOSS_PENALTY = 500
+    # GAIN_REWARD = 500
+    # LOSS_PENALTY = 500
 
     #Evaluates each action and returns the new state
-    #TODO: update step to fit with data and df layout
     def step(self, action, line):
         # 0 = buy
         # 1 = sell
@@ -84,13 +92,6 @@ class StockEnv:
             #When using normalized data must unnormalize the given data to get actual gian_loss value
             #gain_loss = (float(open_f) * RANGE + MIN_VAL) - (self.holding_price * RANGE + MIN_VAL)
             gain_loss = line[0] - self.holding_price
-            #gain_loss = float(open_f) - self.holding_price
-            # if(gain_loss > 0):
-            #     #reward = gain_loss * self.GAIN_MULT
-            #     reward = self.GAIN_REWARD * gain_loss
-            # else:
-            #     #reward = gain_loss * self.LOSS_MULT
-            #     reward = self.LOSS_PENALTY * gain_loss
             reward = gain_loss - self.BUY_PENALTY
             self.holding = 0
             self.holding_price = 0
@@ -101,7 +102,7 @@ class StockEnv:
         #   reward = -self.HOLD_PENALTY
       
         
-        state = line.tolist() + [self.holding, self.holding_price]
+        state = line.to_list() + [self.holding, self.holding_price]
         return np.array(state), reward, terminal_state, gain_loss
 
 
@@ -185,18 +186,15 @@ class DQNAgent:
 
         else:
           model = Sequential()
-          model.add(Dense(64, input_shape=(9,)))
-          model.add(Activation('relu'))
-          #model.add(Dropout(0.2))
-
-
-          model.add(Dense(64))
+          model.add(Dense(128, input_shape=(INPUT_SIZE,)))
           model.add(Activation('relu'))
           #model.add(Dropout(0.2))
 
           model.add(Dense(64))
           model.add(Activation('relu'))
-          #model.add(Dropout(0.2))
+
+          model.add(Dense(64))
+          model.add(Activation('relu'))
 
           #buy, hold, sell
           model.add(Dense(3, activation='linear'))
@@ -253,7 +251,6 @@ class DQNAgent:
             # Update Q value for given state
             current_qs = current_qs_list[index]
             #print(current_qs)
-            #print(current_qs)
             current_qs[action] = new_q
 
             # And append to our training data
@@ -277,105 +274,27 @@ class DQNAgent:
     def get_qs(self, state):
         return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]
 
-
-
-#Gets the current day and previous day for indicators
-def get_time():
-    start = (datetime.datetime.now() + datetime.timedelta(days=-10)).strftime("%Y-%m-%d")
-    end = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-    return start, end
-
-#Get historical data
-def get_hist(symbol):
-    client = CryptoHistoricalDataClient()
-    #t = TimeFrame(5, TimeFrameUnit.Minute)
-    start, end = get_time()
-    request_params = CryptoBarsRequest(
-                        symbol_or_symbols=[symbol],
-                        timeframe=timeframe,
-                        start=start,
-                        end=end
-                 )
-    bars = bars = client.get_crypto_bars(request_params)
-    #bars = api.get_crypto_bars(symbol, timeframe, start, end).df
-    bars = bars.df
-    bars = bars.reset_index(drop=False)
-    #print(bars)
-    #bars = bars.drop(bars[bars.exchange != "FTXU"].index)
-    bars = bars.reset_index(drop=True)
-    bars = bars.drop(columns=["vwap", "trade_count"])
-    bars = bars.rename(columns={"timestamp": "date"})
-    return bars
-
-#Converts the df format into the quote format to create indicators
-def convert_bars(bars):
-    quotes_list = [
-    Quote(d,o,h,l,c,v) 
-    for d,o,h,l,c,v 
-    in zip(bars['date'].apply(lambda x: datetime.datetime.strptime(str(x)[0:19], "%Y-%m-%d %H:%M:%S")), bars['open'], bars['high'], bars['low'], bars['close'], bars['volume'])
-    ]
-    return quotes_list
-
-#Generate indicators
-def get_indicators(quotes_list):
-    heikin_ashi = indicators.get_heikin_ashi(quotes_list)
-
-    #Create new quote list for heikin_ashi bars
-    h_a_quotes = []
-    open_ha, high_ha, low_ha, close_ha = [], [], [], []
-    for i in heikin_ashi:
-        open_ha.append(i.open)
-        high_ha.append(i.high)
-        low_ha.append(i.low)
-        close_ha.append(i.close)
-        h_a_quotes.append(Quote(i.date, i.open, i.high, i.low, i.close, i.volume))
-
-
-    ema_50 = indicators.get_ema(h_a_quotes, 50)
-    for index, i in enumerate(ema_50):
-        ema_50[index] = i.ema
-    ema_200 = indicators.get_ema(h_a_quotes, 200)
-    for index, i in enumerate(ema_200):
-        ema_200[index] = i.ema
-    adx = indicators.get_adx(h_a_quotes, 14)
-    for index, i in enumerate(adx):
-        adx[index] = i.adx
-
-    return adx, ema_50, ema_200, open_ha, high_ha, low_ha, close_ha
-
-####################
-# START OF TRANING #
-####################
+#################
+# START OF MAIN #
+#################
 
 env = StockEnv()
-#state:
-#Open, High, Low, Close, Lips, Teeth, Jaw, Ris
+
 agent = DQNAgent()
 ep_rewards = [0]
 ep_gain = [0]
 
-# open csv of normalized data
-#old
-# state_file = open("./data/{}_norm3.csv".format(STOCK))
-#new
-bars = get_hist(TICKER)
-quotes_list = convert_bars(bars)
-#remove high and low columns
-bars = bars.drop(columns=["high", "low", "date", "symbol"])
-#add data to df in new columns
-bars["adx"], bars["ema_50"], bars["ema_200"], bars["open_ha"], bars["high_ha"], bars["low_ha"], bars["close_ha"] = get_indicators(quotes_list)
-#remove all NaN 
-bars = bars.dropna()
-
+# open csv of BUY,HOLD,SELL data
+state_file = open("./TV_{}_Analysis_{}.csv".format(TICKER, TIME))
 
 #old
 # for i in range(0,SKIP):
 #     current_state = next(state_file)
 # current_state = convert(next(state_file)) #env.reset()
-#new
-current_state = bars.iloc[bars_index]
-current_state = np.asarray(current_state).astype('float32')
-print(current_state)
+
+current_state = convert(next(state_file)) #env.reset()
+#need to add 0 for holding and 0 for holding price
+current_state = np.append(current_state, [0,0])
 
 profit = 0
 num_gains = 0
@@ -405,13 +324,7 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
 
         #get the next ohlc, alligator, and rsi
         #old
-        #line = next(state_file)
-        #new
-        #get next set of data
-        bars_index += 1
-        line = bars.iloc[bars_index]
-        line = np.asarray(line).astype('float32')
-        #print(line)
+        line = convert(next(state_file))
 
         #force sell at end of day
         # if current_state[0] == 1 or current_state[0] == 0.998410174880763:
