@@ -2,9 +2,9 @@ import numpy as np
 #import keras.backend.tensorflow_backend as backend
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Conv2D, MaxPooling2D, Activation, Flatten
-from keras.optimizers import Adam
+#from keras.optimizers import Adam
 import keras
-#from keras.optimizer_v2.adam import Adam
+from keras.optimizer_v2.adam import Adam
 from keras.callbacks import TensorBoard
 import tensorflow as tf
 from collections import deque
@@ -13,13 +13,6 @@ import random
 from tqdm import tqdm
 import os
 import datetime
-
-#Trading and bars libraries
-from alpaca.data.historical import CryptoHistoricalDataClient
-from alpaca.data.requests import CryptoBarsRequest
-from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
-from stock_indicators.indicators.common import Quote
-from stock_indicators import indicators
 
 LOAD_MODEL = None#"models/7210ep__1X64_2X64_stock_1____29.47max___22.12avg__221.21min.model"#"models/3000ep__2X64_stock_0_____0.92max____0.91avg____0.90min.model" #None #Or None
 
@@ -53,8 +46,9 @@ AGGREGATE_STATS_EVERY = 10  # episodes
 def convert(input):
   state = input.split(",")
   state = [np.float(i) for i in state]
-  state = keras.utils.to_categorical(state, num_classes=3).reshape((INPUT_SIZE,))
-  return np.array(state)
+  state_onehot = tf.keras.utils.to_categorical(state[1:], num_classes=3).reshape((INPUT_SIZE - 3,))
+  return_thingy = [state[0]] + state_onehot.tolist()
+  return np.array(return_thingy)
 
 class StockEnv:
     ACTION_SPACE = 3
@@ -102,7 +96,7 @@ class StockEnv:
         #   reward = -self.HOLD_PENALTY
       
         
-        state = line.to_list() + [self.holding, self.holding_price]
+        state = line.tolist() + [self.holding, self.holding_price]
         return np.array(state), reward, terminal_state, gain_loss
 
 
@@ -300,6 +294,8 @@ profit = 0
 num_gains = 0
 num_losses = 0
 
+tracker = 0
+
 # Iterate over episodes
 for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
     # Update tensorboard step every episode
@@ -325,6 +321,9 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         #get the next ohlc, alligator, and rsi
         #old
         line = convert(next(state_file))
+        tracker += 1
+        if(tracker % 100 == 0):
+          print(tracker)
 
         #force sell at end of day
         # if current_state[0] == 1 or current_state[0] == 0.998410174880763:
@@ -347,7 +346,7 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         agent.train(done)
 
         current_state = new_state
-        print(current_state)
+        #print(current_state)
 
     # Append episode reward to a list and log stats (every given number of episodes)
     ep_rewards.append(episode_reward)
