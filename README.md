@@ -29,6 +29,7 @@ Go into config.py and set the variables "API_KEY" and "SECRET_KEY" to your accou
 
 Default outputs (1Hour ticker):
 
+1-Hour Bar Example:
 ```
 quote: BTCUSD - 2022-08-15 19:00:00
 open: 24146.28, high: 24158.00, low: 23980.00, close: 24056.00
@@ -36,6 +37,11 @@ direction: red doji
 ema_50: 24338.52, ema_200: 23960.51
 adx: 20.73
 volume: 84.05
+```
+
+Buy/Sell Example:
+```
+Bought $3289.6896440499995 of BTC/USD! At 2022-09-09 11:00:04.374117
 ```
 
 ## Overview and Strategy
