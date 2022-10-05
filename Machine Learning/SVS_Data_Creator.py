@@ -74,21 +74,44 @@ def get_indicators(quotes_list):
 
     return adx, ema_50, ema_200, open_ha, high_ha, low_ha, close_ha
 
+
+def ema_cross(bar):
+    if bar["ema_50"] > bar["ema_200"]:
+        return 0 
+    return 1
+
+def ha_candle(bur):
+    if(bur["open_ha"] == bur["low_ha"]):
+        return 0
+    elif(bur["open_ha"] == bur["high_ha"]):
+        return 1
+    elif(bur["open_ha"] < bur["close_ha"]):
+        return 2
+    else:
+        return 3
+
+
 #create data set
-# bars = get_hist(TICKER)
-# quotes_list = convert_bars(bars)
-# #remove high and low columns
-# bars = bars.drop(columns=["high", "low", "date", "symbol"])
-# #add data to df in new columns
-# bars["adx"], bars["ema_50"], bars["ema_200"], bars["open_ha"], bars["high_ha"], bars["low_ha"], bars["close_ha"] = get_indicators(quotes_list)
-# #remove all NaN 
-# bars = bars.dropna()
+bars = get_hist(TICKER)
+quotes_list = convert_bars(bars)
+#remove high and low columns
+bars = bars.drop(columns=["high", "low", "date", "symbol"])
+#add data to df in new columns
+bars["adx"], bars["ema_50"], bars["ema_200"], bars["open_ha"], bars["high_ha"], bars["low_ha"], bars["close_ha"] = get_indicators(quotes_list)
+#remove all NaN 
+bars = bars.dropna()
 
-data = pd.read_csv("Data.csv", index_col=False)
+#write to csv
+bars.to_csv("Data_Raw.csv", index=False)
 
-data["foo"] = data[["adx"]].apply(lambda x: x.open,axis=1)
-#data = data.drop(columns=["open", "close"])
-print(data)
+#data = pd.read_csv("Data.csv", index_col=False)
 
+bars["ema_cross"] = bars[["ema_50", "ema_200"]].apply(lambda x: ema_cross(x) , axis=1)
+bars["ha_candle"] = bars[["open_ha", "high_ha", "low_ha", "close_ha"]].apply(lambda x: ha_candle(x) , axis=1)
+#optional
+#["volume"] = data[["volume"]].apply(lambda x: ha_candle(x) , axis=1)
+bars["adx"] = bars["adx"].apply(lambda x: 0 if x > 25 else 1)
 
-#bars.to_csv("Data.csv", index=False)
+#write to csv
+
+bars.to_csv("Data_OneHot.csv", index=False)
