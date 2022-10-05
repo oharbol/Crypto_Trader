@@ -57,6 +57,7 @@ The Simple Volume Strategy is predicted to average a 52% win rate on a 5-Minute 
 ### Potential Fixes
 To make this trading strategy profitable, I need to find a balance between creating high levels of accuracy (winning trades) and trades that yield profits above the Alpaca commission rates during horizontal moving and bearish markets. 
 - __Utilizing a Deep Q Neural Network:__ I have hopes that a neural network might be able to figure out a better way to trade than the hard coded bot.
+    - The machine learning portion of this project can be viewed here: [Machine Learning](https://github.com/oharbol/Crypto_Trader/tree/main/Machine%20Learning)
 - __Addiding Optimizations and Fine Tuning Strategy:__ Adding the given optimizations and then playing around with different variables could lead to greater accuracy/profit.
 
 ## Alpaca Commission Fees
@@ -76,13 +77,15 @@ The fees that alpaca places on total currency traded is somewhat cutthroat. This
 
 Source: [Updated Price for Crypto Trading on Trading API](https://alpaca.markets/blog/updated-pricing-for-crypto-trading-on-trading-api/)
 
-## 1-Hour Results
-![Results](data_BTC.PNG)
+## 1-Hour Bot Results
+<img src="data_BTC.PNG" width="350">
 
 ## TODO
 - [x] Allow trading multiple crypto currencies
 - [x] Add backtesting feature
-- [ ] Allow testing on mulitiple time intervals
 - [ ] Add optimizations to bot version
-- [ ] Add DQN and train models
+- [x] Add DQN and train models
 - [ ] Compare RL agent against bot
+
+# Disclaimer
+__Use this library at your own risk.__ Trading is inherently risky and could lead to financial loss especially with automatated trading. Never run automated trading code without proper supervision to prevent financial losses. I am not responsible for any monetary losses.
