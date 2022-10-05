@@ -5,13 +5,14 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from stock_indicators.indicators.common import Quote
 from stock_indicators import indicators
 import datetime
+import pandas as pd
 
 TICKER = "BTC/USD"
 TIMEFRAME = TimeFrame(1, TimeFrameUnit.Hour)
 
 #Gets the current day and previous day for indicators
 def get_time():
-    start = "2021-07-01"
+    start = "2021-09-18"
     end = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     return start, end
 
@@ -73,14 +74,21 @@ def get_indicators(quotes_list):
 
     return adx, ema_50, ema_200, open_ha, high_ha, low_ha, close_ha
 
+#create data set
+# bars = get_hist(TICKER)
+# quotes_list = convert_bars(bars)
+# #remove high and low columns
+# bars = bars.drop(columns=["high", "low", "date", "symbol"])
+# #add data to df in new columns
+# bars["adx"], bars["ema_50"], bars["ema_200"], bars["open_ha"], bars["high_ha"], bars["low_ha"], bars["close_ha"] = get_indicators(quotes_list)
+# #remove all NaN 
+# bars = bars.dropna()
 
-bars = get_hist(TICKER)
-quotes_list = convert_bars(bars)
-#remove high and low columns
-bars = bars.drop(columns=["high", "low", "date", "symbol"])
-#add data to df in new columns
-bars["adx"], bars["ema_50"], bars["ema_200"], bars["open_ha"], bars["high_ha"], bars["low_ha"], bars["close_ha"] = get_indicators(quotes_list)
-#remove all NaN 
-bars = bars.dropna()
+data = pd.read_csv("Data.csv", index_col=False)
 
-bars.to_csv("Data.csv", index=False)
+data["foo"] = data[["adx"]].apply(lambda x: x.open,axis=1)
+#data = data.drop(columns=["open", "close"])
+print(data)
+
+
+#bars.to_csv("Data.csv", index=False)
