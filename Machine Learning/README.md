@@ -14,7 +14,7 @@ You can learn more at: https://pythonprogramming.net/
 Trading view data collection provided by brian-the-dev's [python-tradingview-ta](https://github.com/brian-the-dev/python-tradingview-ta)
 
 ## How to Use Code
-To optomize the time it takes the model to learn, I utilize Google Collab to run all of the machine learning code. I have been unsuccessful in running it on my own computer so Collab works perfectly. Save the Crypto_DQN.ipynb file to collab and add the appropriate .csv file from the data creator scripts. Here you should be able to run the cells in the jupyter notbook on Collab.
+To optomize the time it takes the model to learn, I utilize Google Collab to run all of the machine learning code. I have been unsuccessful in running it on my own computer so Collab works perfectly. Save the Crypto_DQN.ipynb file to collab and add the appropriate .csv file from the data creator scripts. (Currently the DQN is coded to take SVS_Data_Creator.py outputs). Here you should be able to run the cells in the jupyter notbook on Collab.
 
 ## Overview and Strategy
 
@@ -25,14 +25,18 @@ A Deep Q Network (DQN) is a reinforcement learning model that utilizes the conce
 While most MDPs have states that represents a positive and negative reward at the terminal state, our DQN will utilize the realized gain and loss from selling as the terminal state respectively. Each action that the DQN takes is stored in a "replay memory" that will be learned upon by a smaller batch once the minimum number of steps have been take.
 
 ### Data
-__Trading View Technical Analysis Data:__ The initial data that I am utilizing to train the model comes from the tradingview technical analysis as stated above. The technical data returend involves 26 different indicators: 11 Oscillators and 15 Moving Averages. Each indicator returns a BUY, SELL, or NEUTRAL signal in the form of 0, 1, and 2. I can easily translate these values into one-hot encoded values for the model to learn a lot quicker. 
+__Trading View Technical Analysis Data:__ The initial data that I am utilizing to train the model comes from the tradingview technical analysis as stated above. The technical data returend involves 26 different indicators: 11 Oscillators and 15 Moving Averages. Each indicator returns a BUY, SELL, or NEUTRAL signal in the form of 0, 1, and 2. These can be easily translated into 3-bit one-hot encoded values for the model to learn a lot quicker. 
 
 |Pros|Cons|
 |----|----|
 |One-hot encoded|Need to collect more data|
 |A lot of data to use| Need to conduct a lot of tests by dropping certain signals|
 
-__Simple Volume Strategy Data:__ 
+__Simple Volume Strategy Data:__ The raw data needed for the SVS strategy is the 50 EMA, 200 EMA, ADX, Volume, and Heikin-Ashi candle sticks. This data is converted into onehot encodings for each of the triggers for a long entry. 
+
+Note: I have coded the Heikin-Ashi candles for a onehot encoding of 4 bits to represent the four different types of candles while all others have 2 bits. 
+
+Note: Volume has not been added to the onehot encoding as of now.
 
 |Pros|Cons|
 |----|----|
@@ -40,8 +44,15 @@ __Simple Volume Strategy Data:__
 |Can get historical data|Less uses for one-hot encoding|
 
 ### Optimizations
+- Changing the shape and size of the model
+- Convert compatable data to onehot encoding
 
 ## Results
-
+It ain't looking good fam
 ## TODO
-- [ ] cry
+- [x] Cry
+- [ ] Do more research on reinforcement optimizations
+- [ ] Send issue request to Alpaca regarding historical crypto data
+- [ ] Get more data for historical crypto bars
+- [ ] Train 2 differnet models for each crypto ticker
+- [ ] Cry even more

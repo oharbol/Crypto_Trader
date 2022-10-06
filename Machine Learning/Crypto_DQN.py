@@ -33,14 +33,14 @@ UPDATE_TARGET_EVERY = 1  # Terminal states (end of episodes)
 MODEL_NAME = '1X64_2X64_BTC'
 MIN_REWARD = 1000  # For model save
 MEMORY_FRACTION = 0.20
-INPUT_SIZE = 10
+INPUT_SIZE = 11
 
 # Environment settings
 EPISODES = 3000
 # Exploration settings
 epsilon = 1  # not a constant, going to be decayed
-EPSILON_DECAY = 0.99 #0.99975
-MIN_EPSILON = 0.01
+EPSILON_DECAY = 0.9975 #0.99975
+MIN_EPSILON = 0.25
 
 #  Stats settings
 AGGREGATE_STATS_EVERY = 10  # episodes
@@ -53,6 +53,7 @@ def convert(input):
     state_onehot = np.concatenate((tf.keras.utils.to_categorical(state[2], num_classes=HA_INPUT_SIZE).reshape((4,)), state_onehot), axis=None)
     state_onehot = np.concatenate((tf.keras.utils.to_categorical(state[3], num_classes=ADX_INPUT_SIZE).reshape((2,)), state_onehot), axis=None)
     state_onehot = [state[0]] + state_onehot.tolist()
+    return np.array(state_onehot)
 
 class StockEnv:
     ACTION_SPACE = 3
@@ -61,9 +62,10 @@ class StockEnv:
     # LOSS_MULT = 1000
     holding = 0
     holding_price = 0
+    shares = 0
 
     #Fixed Rewards
-    BUY_PENALTY = 3
+    BUY_PENALTY = 0.003
     # GAIN_REWARD = 500
     # LOSS_PENALTY = 500
 
@@ -81,7 +83,9 @@ class StockEnv:
         if(action == 0 and self.holding == 0):
             self.holding = 1
             self.holding_price = line[0]
-            reward = -self.BUY_PENALTY
+            # reward = -self.BUY_PENALTY
+            self.shares = 1000/line[0]
+
         
         #AI decides to SELL
         #only if holding
@@ -89,10 +93,11 @@ class StockEnv:
             terminal_state = True
             #When using normalized data must unnormalize the given data to get actual gian_loss value
             #gain_loss = (float(open_f) * RANGE + MIN_VAL) - (self.holding_price * RANGE + MIN_VAL)
-            gain_loss = line[0] - self.holding_price
-            reward = gain_loss - self.BUY_PENALTY
+            gain_loss = (line[0] - self.holding_price) * self.shares
+            reward = gain_loss - 3
             self.holding = 0
             self.holding_price = 0
+            
         
         #AI decides to HOLD
         #nothing happends
@@ -184,15 +189,21 @@ class DQNAgent:
 
         else:
           model = Sequential()
-          model.add(Dense(64, input_shape=(INPUT_SIZE,)))
+          model.add(Dense(32, input_shape=(INPUT_SIZE,)))
+          model.add(Activation('relu'))
+          #model.add(Dropout(0.2))
+
+          model.add(Dense(64))
           model.add(Activation('relu'))
           #model.add(Dropout(0.2))
 
           model.add(Dense(32))
           model.add(Activation('relu'))
+          #model.add(Dropout(0.2))
 
           model.add(Dense(16))
           model.add(Activation('relu'))
+          #model.add(Dropout(0.2))
 
           #buy, hold, sell
           model.add(Dense(3, activation='linear'))
@@ -217,10 +228,10 @@ class DQNAgent:
         # print(minibatch)
 
         # Get current states from minibatch, then query NN model for Q values
-        current_states = np.array([transition[0] for transition in minibatch], dtype=np.object)
+        current_states = np.array([transition[0] for transition in minibatch], dtype=object) #np.object
     
         #Need to do this to prevent errors FUCK!!
-        current_states = np.asarray(current_states).astype(np.float)
+        current_states = np.asarray(current_states).astype(np.float64)
 
 
         current_qs_list = self.model.predict(current_states)
@@ -326,13 +337,9 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         #old
         line = convert(next(state_file))
         tracker += 1
-        if(tracker % 100 == 0):
+        if(tracker % 500 == 0):
           print(tracker)
 
-        #force sell at end of day
-        # if current_state[0] == 1 or current_state[0] == 0.998410174880763:
-        #   action = 1
-          #print("HERE")
         #add gain_loss variable
         new_state, reward, done, gain_loss = env.step(action, line)
 
@@ -341,10 +348,12 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         episode_gain += gain_loss
         profit += gain_loss
 
-        if gain_loss > 0:
-          num_gains += 1
-        else:
-          num_losses += 1
+        if(done):
+          if gain_loss > 0:
+            num_gains += 1
+          else:
+            num_losses += 1
+          
         # Every step we update replay memory and train main network
         agent.update_replay_memory((current_state, action, reward, new_state, done))
         agent.train(done)
@@ -361,12 +370,11 @@ for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
         min_reward = sum(ep_rewards[-AGGREGATE_STATS_EVERY:])
         max_reward = max(ep_rewards[-AGGREGATE_STATS_EVERY:])
         win_loss_ratio = num_gains / (num_gains + num_losses)
-        agent.tensorboard.update_stats(epsilon=epsilon, gain_loss=average_gain, profit=profit, min_reward=min_reward, win_loss_ratio=win_loss_ratio)
+        agent.tensorboard.update_stats(gain_loss=average_gain, profit=profit, min_reward=min_reward, win_loss_ratio=win_loss_ratio, epsilon=epsilon)
 
         # Save model, but only when min reward is greater or equal a set value
-        if average_gain >= MIN_REWARD:
-            agent.model.save(f'models/{episode}ep__{MODEL_NAME}__{max_reward:_>7.2f}max_{average_reward:_>7.2f}avg_{min_reward:_>7.2f}min.model')
-        #print(days)
+        if profit >= MIN_REWARD or episode == 18000:
+            agent.model.save(f'models/{episode}ep__{MODEL_NAME}__{win_loss_ratio:_>7.2f}wl_{profit:_>7.2f}prof')
 
     # Decay epsilon
     if epsilon > MIN_EPSILON:
