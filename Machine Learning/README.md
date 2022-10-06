@@ -11,10 +11,10 @@ You can learn more at: https://pythonprogramming.net/
 - Collections (deque)
 - TQDM
 
-Trading view data collection provided by brian-the-dev's [python-tradingview-ta](https://github.com/brian-the-dev/python-tradingview-ta)
+TradingView data collection provided by brian-the-dev's [python-tradingview-ta](https://github.com/brian-the-dev/python-tradingview-ta)
 
 ## How to Use Code
-To optomize the time it takes the model to learn, I utilize Google Collab to run all of the machine learning code. I have been unsuccessful in running it on my own computer so Collab works perfectly. Save the Crypto_DQN.ipynb file to collab and add the appropriate .csv file from the data creator scripts. (Currently the DQN is coded to take SVS_Data_Creator.py outputs). Here you should be able to run the cells in the jupyter notbook on Collab.
+To optomize the time it takes the model to learn, I utilize Google Collab to run all of the machine learning code. I have been unsuccessful in running it on my own computer so Collab works perfectly. Save the Crypto_DQN.ipynb file to collab and add the appropriate .csv file from the data creator scripts. Here you should be able to run the cells in the jupyter notbook on Collab.
 
 ## Overview and Strategy
 
@@ -56,3 +56,6 @@ It ain't looking good fam
 - [ ] Get more data for historical crypto bars
 - [ ] Train 2 differnet models for each crypto ticker
 - [ ] Cry even more
+
+# Disclaimer
+__Use this library at your own risk.__ Trading is inherently risky and could lead to financial loss especially with automatated trading. Never run automated trading code without thorough testing and proper supervision to prevent financial losses. I make no promises that this repository will guarantee profits. I am not responsible for any monetary losses.

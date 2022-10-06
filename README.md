@@ -88,4 +88,4 @@ Source: [Updated Price for Crypto Trading on Trading API](https://alpaca.markets
 - [ ] Compare RL agent against bot
 
 # Disclaimer
-__Use this library at your own risk.__ Trading is inherently risky and could lead to financial loss especially with automatated trading. Never run automated trading code without proper supervision to prevent financial losses. I am not responsible for any monetary losses.
+__Use this library at your own risk.__ Trading is inherently risky and could lead to financial loss especially with automatated trading. Never run automated trading code without thorough testing and proper supervision to prevent financial losses. I make no promises that this repository will guarantee profits. I am not responsible for any monetary losses.
