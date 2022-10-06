@@ -55,6 +55,7 @@ It ain't looking good fam
 - [ ] Send issue request to Alpaca regarding historical crypto data
 - [ ] Get more data for historical crypto bars
 - [ ] Train 2 differnet models for each crypto ticker
+- [ ] Research news sentiment implementation
 - [ ] Cry even more
 
 # Disclaimer

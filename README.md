@@ -1,5 +1,5 @@
 # Crypto_Trader
-
+See the [Machine Learning](https://github.com/oharbol/Crypto_Trader/tree/main/Machine%20Learning) portion of this project.
 ## Requirements
 - Pandas
 - ~~[Alpaca Trade API](https://github.com/alpacahq/alpaca-trade-api-python)~~ <-- Depricated
