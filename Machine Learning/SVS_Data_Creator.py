@@ -1,4 +1,5 @@
 #Trading and bars libraries
+from multiprocessing.reduction import steal_handle
 from alpaca.data.historical import CryptoHistoricalDataClient
 from alpaca.data.requests import CryptoBarsRequest
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
@@ -6,13 +7,16 @@ from stock_indicators.indicators.common import Quote
 from stock_indicators import indicators
 import datetime
 import pandas as pd
+import numpy as np
+#import tensorflow as tf
 
 TICKER = "BTC/USD"
+TICKER_NAME = "BTC"
 TIMEFRAME = TimeFrame(1, TimeFrameUnit.Hour)
 
 #Gets the current day and previous day for indicators
 def get_time():
-    start = "2021-09-18"
+    start = "2018-01-01"
     end = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     return start, end
 
@@ -95,23 +99,42 @@ def ha_candle(bur):
 bars = get_hist(TICKER)
 quotes_list = convert_bars(bars)
 #remove high and low columns
-bars = bars.drop(columns=["high", "low", "date", "symbol"])
+bars = bars.drop(columns=["high", "low", "symbol"])
 #add data to df in new columns
 bars["adx"], bars["ema_50"], bars["ema_200"], bars["open_ha"], bars["high_ha"], bars["low_ha"], bars["close_ha"] = get_indicators(quotes_list)
 #remove all NaN 
 bars = bars.dropna()
 
 #write to csv
-bars.to_csv("Data_Raw.csv", index=False)
+bars.to_csv("Data_Raw_{}.csv".format(TICKER_NAME), index=False, header=False)
 
 #data = pd.read_csv("Data.csv", index_col=False)
+#onehot data
+data_onehot = pd.DataFrame()
 
-bars["ema_cross"] = bars[["ema_50", "ema_200"]].apply(lambda x: ema_cross(x) , axis=1)
-bars["ha_candle"] = bars[["open_ha", "high_ha", "low_ha", "close_ha"]].apply(lambda x: ha_candle(x) , axis=1)
+data_onehot["open"] = bars["open"]
+data_onehot["ema_cross"] = bars[["ema_50", "ema_200"]].apply(lambda x: ema_cross(x) , axis=1)
+data_onehot["ha_candle"] = bars[["open_ha", "high_ha", "low_ha", "close_ha"]].apply(lambda x: ha_candle(x) , axis=1)
 #optional
 #["volume"] = data[["volume"]].apply(lambda x: ha_candle(x) , axis=1)
-bars["adx"] = bars["adx"].apply(lambda x: 0 if x > 25 else 1)
+data_onehot["adx"] = bars["adx"].apply(lambda x: 0 if x > 25 else 1)
 
 #write to csv
+data_onehot.to_csv("Data_OneHot_{}.csv".format(TICKER_NAME), index=False, header=False)
 
-bars.to_csv("Data_OneHot.csv", index=False)
+#Trying to figure out new config function
+
+# EMA_INPUT_SIZE = 2
+# HA_INPUT_SIZE = 4
+# ADX_INPUT_SIZE = 2
+
+# data = open("Data_OneHot_BTC.csv")
+# state = next(data)
+
+# state = state.split(",")
+# state = [np.float64(i) for i in state]
+# state_onehot = tf.keras.utils.to_categorical(state[0], num_classes=EMA_INPUT_SIZE).reshape((2,))
+# state_onehot = np.concatenate((tf.keras.utils.to_categorical(state[1], num_classes=HA_INPUT_SIZE).reshape((4,)), state_onehot), axis=None)
+# state_onehot = np.concatenate((tf.keras.utils.to_categorical(state[2], num_classes=ADX_INPUT_SIZE).reshape((2,)), state_onehot), axis=None)
+# return_thingy = [state[0]] + state_onehot.tolist()
+# np.array(return_thingy)

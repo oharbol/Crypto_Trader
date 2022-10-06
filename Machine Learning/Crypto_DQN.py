@@ -19,6 +19,9 @@ LOAD_MODEL = None#"models/7210ep__1X64_2X64_stock_1____29.47max___22.12avg__221.
 TICKER = "BTC"
 TIME = "1m"
 
+EMA_INPUT_SIZE = 2
+HA_INPUT_SIZE = 4
+ADX_INPUT_SIZE = 2
 #timeframe = TimeFrame(1, TimeFrameUnit.Hour)
 bars_index = 0
 
@@ -30,7 +33,7 @@ UPDATE_TARGET_EVERY = 1  # Terminal states (end of episodes)
 MODEL_NAME = '1X64_2X64_BTC'
 MIN_REWARD = 1000  # For model save
 MEMORY_FRACTION = 0.20
-INPUT_SIZE = 81
+INPUT_SIZE = 10
 
 # Environment settings
 EPISODES = 3000
@@ -44,11 +47,12 @@ AGGREGATE_STATS_EVERY = 10  # episodes
 
 #change so convert works with input data
 def convert(input):
-  state = input.split(",")
-  state = [np.float(i) for i in state]
-  state_onehot = tf.keras.utils.to_categorical(state[1:], num_classes=3).reshape((INPUT_SIZE - 3,))
-  return_thingy = [state[0]] + state_onehot.tolist()
-  return np.array(return_thingy)
+    state = input.split(",")
+    state = [np.float64(i) for i in state]
+    state_onehot = tf.keras.utils.to_categorical(state[1], num_classes=EMA_INPUT_SIZE).reshape((2,))
+    state_onehot = np.concatenate((tf.keras.utils.to_categorical(state[2], num_classes=HA_INPUT_SIZE).reshape((4,)), state_onehot), axis=None)
+    state_onehot = np.concatenate((tf.keras.utils.to_categorical(state[3], num_classes=ADX_INPUT_SIZE).reshape((2,)), state_onehot), axis=None)
+    state_onehot = [state[0]] + state_onehot.tolist()
 
 class StockEnv:
     ACTION_SPACE = 3
@@ -180,14 +184,14 @@ class DQNAgent:
 
         else:
           model = Sequential()
-          model.add(Dense(128, input_shape=(INPUT_SIZE,)))
+          model.add(Dense(64, input_shape=(INPUT_SIZE,)))
           model.add(Activation('relu'))
           #model.add(Dropout(0.2))
 
-          model.add(Dense(64))
+          model.add(Dense(32))
           model.add(Activation('relu'))
 
-          model.add(Dense(64))
+          model.add(Dense(16))
           model.add(Activation('relu'))
 
           #buy, hold, sell
@@ -279,7 +283,7 @@ ep_rewards = [0]
 ep_gain = [0]
 
 # open csv of BUY,HOLD,SELL data
-state_file = open("./TV_{}_Analysis_{}.csv".format(TICKER, TIME))
+state_file = open("./Data_OneHot_{}.csv".format(TICKER))
 
 #old
 # for i in range(0,SKIP):
