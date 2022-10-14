@@ -1,6 +1,6 @@
 __pycache__/
 config.py
 practice.py
-Models/*
-Logs/*
+Machine Learning/Models/*
+Machine Learning/Models/Logs/*
 *.csv

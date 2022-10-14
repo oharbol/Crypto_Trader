@@ -8,19 +8,20 @@ from stock_indicators import indicators
 import datetime
 import pandas as pd
 import numpy as np
-#import tensorflow as tf
+# import tensorflow as tf
 
 TICKER = "BTC/USD"
 TICKER_NAME = "BTC"
 TIMEFRAME = TimeFrame(1, TimeFrameUnit.Hour)
+prev_volume = 0
 
-#Gets the current day and previous day for indicators
+# Gets the current day and previous day for indicators
 def get_time():
     start = "2018-01-01"
     end = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     return start, end
 
-#Get historical data
+# Get historical data
 def get_hist(symbol):
     client = CryptoHistoricalDataClient()
     #t = TimeFrame(5, TimeFrameUnit.Minute)
@@ -42,7 +43,7 @@ def get_hist(symbol):
     bars = bars.rename(columns={"timestamp": "date"})
     return bars
 
-#Converts the df format into the quote format to create indicators
+# Converts the df format into the quote format to create indicators
 def convert_bars(bars):
     quotes_list = [
     Quote(d,o,h,l,c,v) 
@@ -51,7 +52,7 @@ def convert_bars(bars):
     ]
     return quotes_list
 
-#Generate indicators
+# Generate indicators
 def get_indicators(quotes_list):
     heikin_ashi = indicators.get_heikin_ashi(quotes_list)
 
@@ -94,33 +95,45 @@ def ha_candle(bur):
     else:
         return 3
 
+def volume_add(foo):
+    global prev_volume
+    volume_one_hot = 0
+    if(foo > prev_volume):
+        volume_one_hot = 1
+    prev_volume = foo
+    return volume_one_hot
 
-#create data set
+
+# create data set
 bars = get_hist(TICKER)
 quotes_list = convert_bars(bars)
-#remove high and low columns
+# remove high and low columns
 bars = bars.drop(columns=["high", "low", "symbol"])
-#add data to df in new columns
+# add data to df in new columns
 bars["adx"], bars["ema_50"], bars["ema_200"], bars["open_ha"], bars["high_ha"], bars["low_ha"], bars["close_ha"] = get_indicators(quotes_list)
-#remove all NaN 
+# remove all NaN 
 bars = bars.dropna()
 
-#write to csv
-bars.to_csv("Data_Raw_{}.csv".format(TICKER_NAME), index=False, header=False)
+# write raw data
+bars.to_csv("Data_Raw_{}.csv".format(TICKER_NAME), index=False, header=True)
 
-#data = pd.read_csv("Data.csv", index_col=False)
+
 #onehot data
 data_onehot = pd.DataFrame()
 
 data_onehot["open"] = bars["open"]
 data_onehot["ema_cross"] = bars[["ema_50", "ema_200"]].apply(lambda x: ema_cross(x) , axis=1)
 data_onehot["ha_candle"] = bars[["open_ha", "high_ha", "low_ha", "close_ha"]].apply(lambda x: ha_candle(x) , axis=1)
-#optional
-#["volume"] = data[["volume"]].apply(lambda x: ha_candle(x) , axis=1)
 data_onehot["adx"] = bars["adx"].apply(lambda x: 0 if x > 25 else 1)
+#optional
+data_onehot["volume"] = bars["volume"].apply(lambda x: volume_add(x))
 
 #write to csv
 data_onehot.to_csv("Data_OneHot_{}.csv".format(TICKER_NAME), index=False, header=False)
+
+#write to csv
+data_onehot["date"] = bars["date"]
+data_onehot.to_csv("Data_OneHot_BackTest_{}.csv".format(TICKER_NAME), index=False, header=False)
 
 #Trying to figure out new config function
 
