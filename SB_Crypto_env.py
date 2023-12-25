@@ -22,8 +22,12 @@ import csv
 # Have entire environment keep track of the profit, win/loss, or any other trends to help with trades
 # OneHot encoding: Have 
 
-# Doing Now
+# Train PPO model on ETH/USD in 5Min, 15Min, 30Min, 1Hour
 
+# ** Reward: Reward based off of difference of last trade
+#           - Reward based off of time holding to sell
+#           - Point system adding and subtracting throughout training process. Gain for positive gl and losing points for negative gl. Game for model
+#           - Game ends once model reaches score, or ends with episode length, both with score as reward
 
 DATA_CSV = "Data/Data_Raw_OMA_BTC_5Min"
 TIMESTEPS = 293380

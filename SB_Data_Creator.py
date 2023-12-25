@@ -12,13 +12,13 @@ import numpy as np
 # - 8 hours
 # Min - 5, 15, 30 , 45
 # Hour - 1, 2, 3, 4
-TICKER = "BTC/USD"
-TICKER_NAME = "BTC"
-TIMEFRAME = "45Min"
+TICKER = "ETH/USD"
+TICKER_NAME = "ETH"
+TIMEFRAME = "30Min"
 
 START_TIME = datetime(2016, 1, 1)
 END_TIME = datetime.now()
-TIME_FRAME = TimeFrame(45, TimeFrameUnit.Minute)
+TIME_FRAME = TimeFrame(30, TimeFrameUnit.Minute)
 # Min - 5, 15, 30 , 45
 # Hour - 1, 2, 3, 4
 
