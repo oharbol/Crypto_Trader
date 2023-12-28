@@ -2,7 +2,7 @@ import gymnasium as gym
 from stable_baselines3 import PPO
 from stable_baselines3 import A2C
 from stable_baselines3 import DQN
-from sb3_contrib import RecurrentPPO, QRDQN, ARS
+# from sb3_contrib import RecurrentPPO, QRDQN, ARS
 import os
 from SB_Crypto_env import CryptoEnv
 

@@ -1,16 +1,9 @@
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
-import cv2
-import random
-import time
-from collections import deque
+# from collections import deque
 
-import gymnasium as gym
-import numpy as np
-from gymnasium import spaces
-
-import keras
+# import keras
 
 import csv
 

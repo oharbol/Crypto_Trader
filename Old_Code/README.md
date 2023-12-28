@@ -1,35 +1,56 @@
 # Crypto_Trader
-
+See the [Machine Learning](https://github.com/oharbol/Crypto_Trader/tree/main/Machine%20Learning) portion of this project.
 ## Requirements
-- Pandas, Numpy, Tensorflow/Keras
+- Pandas
 - ~~[Alpaca Trade API](https://github.com/alpacahq/alpaca-trade-api-python)~~ <-- Depricated
 - [Alpaca-py](https://github.com/alpacahq/alpaca-py)
 - [Stock.Indicators.Python](https://github.com/DaveSkender/Stock.Indicators.Python) (created by DaveSkender)
-- [Stable Baselines 3](https://stable-baselines3.readthedocs.io/en/master/guide/install.html)
-- [Open AI Gymnasium](https://gymnasium.farama.org/index.html) (Formerly known as "Gym")
 
 ## Trading Rule
 
-This trading model follows the [Trading View Technical Analysis](https://www.tradingview.com/symbols/BTCUSD/technicals/) (Example of BTC).
+This trading bot follows the [Simple Volume Strategy](https://www.youtube.com/watch?v=ydolTWrM5vc). The strategy follows these rules to enter long:
+- EMA 50 is greater than EMA 200
+- ADX is greater than 20 (edited from default 25)
+- Volume is greater than previous tick (Alpaca historical volume isn't reliable so this is scratched)
+- Bullish Heikin Ashi candle stick
+
+### Optimizations
+- Wait for price to touch the 50 EMA
+- Use Wave Trend Indicator
+- Use RSI to gauge pullbacks
+- View higher time frame
+- Trade when volume is above its own MA
 
 ## How To Use Code
-Go into config.py and set the variables "API_KEY" and "SECRET_KEY" to your Alpaca account's information.
+Go into config.py and set the variables "API_KEY" and "SECRET_KEY" to your account's information. Once that is set, run:
 
-To create the csv data to train the models, edit the TIME_VALUE constant inside of the "SB_Data_Creator" to meet the minute interval data desired. Run the code with:
+    python SVS_Strategy.py
+
+
+Default outputs (1Hour ticker):
+
+1-Hour Bar Example:
 ```
-    python SB_Data_Creator.py
+quote: BTCUSD - 2022-08-15 19:00:00
+open: 24146.28, high: 24158.00, low: 23980.00, close: 24056.00
+direction: red doji
+ema_50: 24338.52, ema_200: 23960.51
+adx: 20.73
+volume: 84.05
 ```
 
-Only code for training models has been created. See TODO section for future updates to code and explanations for how to run the code.
+Buy/Sell Example:
+```
+Bought $3289.6896440499995 of BTC/USD! At 2022-09-09 11:00:04.374117
+```
 
 ## Overview and Strategy
-
+As of August 20th 2022, backtesting has shown that the Simple Volume Strategy (linked below) is somewhat profitable during extremely bullish market periods, while generally horizontal movements and bearish treands will yield unprofitable results.
 
 ### Issues
-The biggest issues that arise with creating a trading model are:
+The biggest issues that arise with creating a trading bot are:
 - Achieving a high level of winning trades
-- Gaining above the 0.4% Alpaca crypto commission on every trade
-- During the training process, ensuring the model's reward can relate to the increase in profit and the win/loss ratio
+- Gaining above the 0.3% Alpaca crypto commission on every trade
 
 The Simple Volume Strategy is predicted to average a 52% win rate on a 5-Minute time frame. Utilizing the exclusive script by the author on Trading View, I have found that only the 1-Hour time frame can can produce enough consistent profits above the 0.3% Alpaca commission. While the strategy tester has shown a general uptrend of profits, my backtesting did not yield the same results. This is because my strategy has followed the trading strategy exactly while the one on Trading View forgoes the EMA crossing rule. 
 
