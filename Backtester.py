@@ -8,8 +8,8 @@ from stable_baselines3 import PPO
 
 from SB_Crypto_env import CryptoEnv
 
-DATA_CSV = "Data_Raw_OMA_BTC_30Min"
-TIME_STEPS = 51400
+DATA_CSV = "Data/Data_Raw_OMA_BTC_30Min"
+TIME_STEPS = 51970
 CASH = 100
 
 # Convert Observation space into floats

@@ -13,8 +13,8 @@ import numpy as np
 # Min - 5, 15, 30 , 45
 # Hour - 1, 2, 3, 4
 TIME_VALUE = 30
-TICKER = "ETH/USD"
-TICKER_NAME = "ETH"
+TICKER = "BTC/USD"
+TICKER_NAME = "BTC"
 TIMEFRAME = f"{TIME_VALUE}Min"
 
 START_TIME = datetime(2016, 1, 1)
