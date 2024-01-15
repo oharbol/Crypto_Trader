@@ -6,10 +6,11 @@ import csv
 
 from stable_baselines3 import PPO
 
-from SB_Crypto_env import CryptoEnv
+# from SB_Crypto_env import CryptoEnv
+from SB_Crypto_env_new import CryptoEnv
 
 DATA_CSV = "Data/Data_Raw_OMA_BTC_30Min"
-TIME_STEPS = 51970
+TIME_STEPS = 52000
 CASH = 100
 
 # Convert Observation space into floats
@@ -39,8 +40,8 @@ def obs_level(holding, realized_gl):
     return gl_level
 
 models_dir = "models"
-model_name = "PPO_30Min_OMARaw_Reward5_obslevel_23"
-model_zip = "PPO_30Min_OMARaw_Reward5_obslevel_23_3495200"
+model_name = "PPO_BTC_30Min_OMARaw_Reward6_obslevel_score20_1"
+model_zip = "PPO_BTC_30Min_OMARaw_Reward6_obslevel_score20_1_3949720"
 
 env = CryptoEnv()
 

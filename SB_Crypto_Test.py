@@ -51,8 +51,8 @@ class TensorboardCallback(BaseCallback):
 SAVE_MODEL = True
 
 # Naming Convention
-# "Model_Timeframe_data source_Reward Function_added observations_#itteration"
-model_name = "PPO_BTC_30Min_OMARaw_Reward6_obslevel_score20_2"
+# "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
+model_name = "PPO_ETH_sh23_30Min_OMARaw_Reward6_obslevel_score20_1"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
@@ -95,7 +95,7 @@ model = PPO("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 
 # 4 Million total timesteps
-TIMESTEPS = 51970
+TIMESTEPS = 52000
 for i in range(79):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name= model_name, callback=TensorboardCallback())
     if(SAVE_MODEL):

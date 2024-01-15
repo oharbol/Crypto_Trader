@@ -22,8 +22,8 @@ import csv
 #           - Point system adding and subtracting throughout training process. Gain for positive gl and losing points for negative gl. Game for model
 #           - Game ends once model reaches score, or ends with episode length, both with score as reward
 
-DATA_CSV = "Data/Data_Raw_OMA_BTC_30Min"
-TIMESTEPS = 51970
+DATA_CSV = "Data/Data_Raw_OMA_ETH_30Min"
+TIMESTEPS = 52000
 # TIMESERIES = "1Hour"
 SHAPE = 23
 CASH = 100
@@ -145,10 +145,10 @@ class CryptoEnv(gym.Env):
             # Worse profits yield lower reward, all positive gains are same reward
             if(realized_gl < -1.4 * REWARD_MULT):
                 self.reward = -15
-                self.score -= 3
+                self.score -= 1
             elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
                 self.reward = -10
-                self.score -= 2
+                self.score -= 1
             elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
                 self.reward = -5
                 self.score -= 1
@@ -157,10 +157,10 @@ class CryptoEnv(gym.Env):
                 self.score += 1
             elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
                 self.reward = 2
-                self.score += 2
+                self.score += 1
             else:
                 self.reward = 3
-                self.score += 3
+                self.score += 1
 
 
             # Add realized gains to total profit
