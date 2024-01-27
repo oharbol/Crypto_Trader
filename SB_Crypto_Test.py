@@ -52,7 +52,7 @@ SAVE_MODEL = True
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
-model_name = "PPO_ETH_sh23_30Min_OMARaw_Reward6_obslevel_score20_1"
+model_name = "DQN_ETH_sh23_30Min_OMARaw_Mult1_Reward6_obslevel_score75_1"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
@@ -89,14 +89,14 @@ env.reset()
 
 # Models
 # model = A2C("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
-model = PPO("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
-# model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.9, batch_size=128, tensorboard_log=logdir)
+# model = PPO("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
+model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.9, exploration_final_eps=0, batch_size=128, tensorboard_log=logdir)
 # model = RecurrentPPO("MlpLstmPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 
 # 4 Million total timesteps
-TIMESTEPS = 52000
-for i in range(79):
+TIMESTEPS = 53290
+for i in range(316):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name= model_name, callback=TensorboardCallback())
     if(SAVE_MODEL):
         model.save(f"{models_dir}/{model_name}_{TIMESTEPS*i}")

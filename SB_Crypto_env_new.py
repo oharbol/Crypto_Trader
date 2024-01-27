@@ -23,12 +23,12 @@ import csv
 #           - Game ends once model reaches score, or ends with episode length, both with score as reward
 
 DATA_CSV = "Data/Data_Raw_OMA_ETH_30Min"
-TIMESTEPS = 52000
+TIMESTEPS = 53290
 # TIMESERIES = "1Hour"
 SHAPE = 23
 CASH = 100
 REWARD_MULT = 1
-SCORE = 20
+SCORE = 75
 
 OBS_LEVEL = True
 CLASSIFICATIONS = 7
@@ -52,8 +52,6 @@ class CryptoEnv(gym.Env):
         self.done = False
         self.steps = 0
         self.hold_steps = 0
-
-        
 
         # Log related code
         self.wins = 1
@@ -143,6 +141,8 @@ class CryptoEnv(gym.Env):
             # Reward 6: Levels of earning (6) yeild flat reward to incentivise 
             # Combined with reward of -0.01 every hold action
             # Worse profits yield lower reward, all positive gains are same reward
+
+            # Gabe suggestion: Increase thresholds
             if(realized_gl < -1.4 * REWARD_MULT):
                 self.reward = -15
                 self.score -= 1
@@ -229,18 +229,19 @@ class CryptoEnv(gym.Env):
         if(self.steps >= TIMESTEPS):
             #self.file.close()
             self.done = True
+            
+            # Set reward
+            self.reward = self.score * 100
+
             self.score = 0
 
-            # Set reward
-            self.reward = self.score * 10
-
         # Check if game is won
-        if(self.score > SCORE):
+        if(self.score >= SCORE):
             self.done = True
-            self.reward = 100
-        elif(self.score < -SCORE):
+            self.reward = 100 * SCORE
+        elif(self.score <= -SCORE):
             self.done = True
-            self.reward = -1000
+            self.reward = -100 * SCORE
         
         # Get next set of data
         self.observation = next(self.reader)
@@ -297,6 +298,8 @@ class CryptoEnv(gym.Env):
         self.hold_steps = 0
         self.restart += 1
 
+        #TODO: Change this to only close and reopen file when end is reached.
+        # Still give reward for winning or losing by score
         self.file.close()
         self.file = open("{}.csv".format(DATA_CSV))
         self.reader = csv.reader(self.file)
