@@ -9,9 +9,10 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 import os
+from sklearn.preprocessing import MinMaxScaler 
 
 # Const variables to change for data creation
-TIME_VALUE = 30
+TIME_VALUE = 15
 TICKER_NAME = "ETH"
 TIME_FRAME_UNIT = TimeFrameUnit.Minute
 
@@ -402,3 +403,41 @@ print("Start CSV data writing\n")
 # print(bars)
 # print()
 # print(bars_onehot)
+
+
+# Normalized Variables
+# DEBUGGING CODE
+print("Normalizing Data\n")
+
+df_normalized = bars.copy()
+
+df_normalized["rsi"] = MinMaxScaler().fit_transform(np.array(df_normalized["rsi"]).reshape(-1,1))
+df_normalized["macd"] = MinMaxScaler().fit_transform(np.array(df_normalized["macd"]).reshape(-1,1))
+df_normalized["ultimate"] = MinMaxScaler().fit_transform(np.array(df_normalized["ultimate"]).reshape(-1,1))
+df_normalized["mom"] = MinMaxScaler().fit_transform(np.array(df_normalized["mom"]).reshape(-1,1))
+df_normalized["stoch1"] = MinMaxScaler().fit_transform(np.array(df_normalized["stoch1"]).reshape(-1,1))
+df_normalized["stoch2"] = MinMaxScaler().fit_transform(np.array(df_normalized["stoch2"]).reshape(-1,1))
+df_normalized["cci"] = MinMaxScaler().fit_transform(np.array(df_normalized["cci"]).reshape(-1,1))
+
+df_normalized["ema10"] = MinMaxScaler().fit_transform(np.array(df_normalized["ema10"]).reshape(-1,1))
+df_normalized["sma10"] = MinMaxScaler().fit_transform(np.array(df_normalized["sma10"]).reshape(-1,1))
+
+df_normalized["ema20"] = MinMaxScaler().fit_transform(np.array(df_normalized["ema20"]).reshape(-1,1))
+df_normalized["sma20"] = MinMaxScaler().fit_transform(np.array(df_normalized["sma20"]).reshape(-1,1))
+
+df_normalized["ema30"] = MinMaxScaler().fit_transform(np.array(df_normalized["ema30"]).reshape(-1,1))
+df_normalized["sma30"] = MinMaxScaler().fit_transform(np.array(df_normalized["sma30"]).reshape(-1,1))
+
+df_normalized["ema50"] = MinMaxScaler().fit_transform(np.array(df_normalized["ema50"]).reshape(-1,1))
+df_normalized["sma50"] = MinMaxScaler().fit_transform(np.array(df_normalized["sma50"]).reshape(-1,1))
+
+df_normalized["ema100"] = MinMaxScaler().fit_transform(np.array(df_normalized["ema100"]).reshape(-1,1))
+df_normalized["sma100"] = MinMaxScaler().fit_transform(np.array(df_normalized["sma100"]).reshape(-1,1))
+
+df_normalized["ema200"] = MinMaxScaler().fit_transform(np.array(df_normalized["ema200"]).reshape(-1,1))
+df_normalized["sma200"] = MinMaxScaler().fit_transform(np.array(df_normalized["sma200"]).reshape(-1,1))
+
+df_normalized["vwma20"] = MinMaxScaler().fit_transform(np.array(df_normalized["vwma20"]).reshape(-1,1))
+df_normalized["hma9"] = MinMaxScaler().fit_transform(np.array(df_normalized["hma9"]).reshape(-1,1))
+
+df_normalized.to_csv("Data/Data_Normalized_OMA_{}_{}.csv".format(TICKER_NAME, TIMEFRAME), index=False, header=True)

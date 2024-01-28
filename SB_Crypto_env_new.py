@@ -97,23 +97,43 @@ class CryptoEnv(gym.Env):
             # Worse profits yield lower reward, all positive gains are same reward
 
             #TODO: Gabe suggestion: Increase thresholds
+            # if(realized_gl < -1.4 * REWARD_MULT):
+            #     self.reward = -15
+            #     self.score -= 1
+            # elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
+            #     self.reward = -10
+            #     self.score -= 1
+            # elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
+            #     self.reward = -5
+            #     self.score -= 1
+            # elif(realized_gl > 0 and realized_gl < 0.7 * REWARD_MULT):
+            #     self.reward = 1
+            #     self.score += 1
+            # elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
+            #     self.reward = 2
+            #     self.score += 1
+            # else:
+            #     self.reward = 3
+            #     self.score += 1
+
+            # Reward 7
             if(realized_gl < -1.4 * REWARD_MULT):
-                self.reward = -15
-                self.score -= 1
+                self.reward = -30
+                self.score -= 3
             elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
+                self.reward = -20
+                self.score -= 2
+            elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
                 self.reward = -10
                 self.score -= 1
-            elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
-                self.reward = -5
-                self.score -= 1
             elif(realized_gl > 0 and realized_gl < 0.7 * REWARD_MULT):
-                self.reward = 1
+                self.reward = 5
                 self.score += 1
             elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
-                self.reward = 2
+                self.reward = 10
                 self.score += 1
             else:
-                self.reward = 3
+                self.reward = 15
                 self.score += 1
 
 

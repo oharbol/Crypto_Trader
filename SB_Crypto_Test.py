@@ -52,11 +52,11 @@ class TensorboardCallback(BaseCallback):
 SAVE_MODEL = True
 TIMESTEPS = 53290
 DATA_CSV = "Data/Data_Raw_OMA_ETH_30Min"
-SCORE = 50
+SCORE = 200
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
-model_name = "DQN_ETH_sh23_30Min_OMARaw_Mult1_Reward6_norestart_obslevel_score50_1"
+model_name = "DQN_ETH_sh23_30Min_OMARaw_Mult1_Reward7_norestart_obslevel_score100_1"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
@@ -76,7 +76,7 @@ env.reset()
 # Models
 # model = A2C("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = PPO("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
-model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.9, exploration_final_eps=0.001, batch_size=256, tensorboard_log=logdir)
+model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.9, exploration_final_eps=0.0005, batch_size=256, tensorboard_log=logdir)
 # model = RecurrentPPO("MlpLstmPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 

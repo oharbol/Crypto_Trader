@@ -29,10 +29,13 @@ class Backtester():
             x = np.arange(0, self.TIME_STEPS, 1)
             y = deque([])
 
+            plt.ylabel("Profit")
+            plt.xlabel("Timesteps")
+
         # Handle getting trained model
         model_path = f"{models_dir}/{model_name}/{model_zip}.zip"
         #TODO: Make switch case for model to load
-        model = PPO.load(model_path)
+        model = DQN.load(model_path)
 
         # Create environment
         env = CryptoEnv(self.DATA_CSV, self.TIME_STEPS, score=score)
@@ -48,7 +51,7 @@ class Backtester():
         for i in range(self.TIME_STEPS):
             
             # Make prediction
-            action, _states = model.predict(observation)
+            action, _states = model.predict(observation, deterministic=True)
 
             # Get observation from step
             observation, reward, done, truncated, info = env.step(action)
