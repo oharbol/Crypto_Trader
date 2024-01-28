@@ -52,7 +52,7 @@ SAVE_MODEL = True
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
-model_name = "DQN_ETH_sh23_30Min_OMARaw_Mult1_Reward6_obslevel_score75_1"
+model_name = "DQN_ETH_sh23_15Min_OMARaw_Mult1_Reward6_norestart_obslevel_score20_3"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
@@ -95,8 +95,8 @@ model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.9, exploration_f
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 
 # 4 Million total timesteps
-TIMESTEPS = 53290
-for i in range(316):
+TIMESTEPS = 103100 # 296300 #53290
+for i in range(54):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name= model_name, callback=TensorboardCallback())
     if(SAVE_MODEL):
         model.save(f"{models_dir}/{model_name}_{TIMESTEPS*i}")

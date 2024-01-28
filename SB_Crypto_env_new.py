@@ -22,13 +22,13 @@ import csv
 #           - Point system adding and subtracting throughout training process. Gain for positive gl and losing points for negative gl. Game for model
 #           - Game ends once model reaches score, or ends with episode length, both with score as reward
 
-DATA_CSV = "Data/Data_Raw_OMA_ETH_30Min"
-TIMESTEPS = 53290
+DATA_CSV = "Data/Data_Raw_OMA_ETH_15Min"
+TIMESTEPS = 103100 #296300 #53290
 # TIMESERIES = "1Hour"
 SHAPE = 23
 CASH = 100
 REWARD_MULT = 1
-SCORE = 75
+SCORE = 20
 
 OBS_LEVEL = True
 CLASSIFICATIONS = 7
@@ -50,7 +50,7 @@ class CryptoEnv(gym.Env):
         self.reader = csv.reader(self.file)
         self.profit = 0
         self.done = False
-        self.steps = 0
+        self.steps = TIMESTEPS
         self.hold_steps = 0
 
         # Log related code
@@ -293,18 +293,23 @@ class CryptoEnv(gym.Env):
         self.holding = False
         self.reward = 0
         self.amount_bought = 0
-        self.steps = 0
+        
         self.score = 0
         self.hold_steps = 0
         self.restart += 1
 
         #TODO: Change this to only close and reopen file when end is reached.
         # Still give reward for winning or losing by score
-        self.file.close()
-        self.file = open("{}.csv".format(DATA_CSV))
-        self.reader = csv.reader(self.file)
-        next(self.reader)
+        # End game after set time
+        if(self.steps >= TIMESTEPS):
+            self.steps = 0
+            self.file.close()
+            self.file = open("{}.csv".format(DATA_CSV))
+            self.reader = csv.reader(self.file)
+            next(self.reader)
+
         self.observation = next(self.reader)
+        self.steps += 1
 
         # Remove current price
         self.previous_price = float(self.observation.pop(0))
