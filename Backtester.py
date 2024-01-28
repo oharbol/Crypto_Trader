@@ -32,7 +32,7 @@ class Backtester():
         # Handle getting trained model
         model_path = f"{models_dir}/{model_name}/{model_zip}.zip"
         #TODO: Make switch case for model to load
-        model = DQN.load(model_path)
+        model = PPO.load(model_path)
 
         # Create environment
         env = CryptoEnv(self.DATA_CSV, self.TIME_STEPS, score=score)

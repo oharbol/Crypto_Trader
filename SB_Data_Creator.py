@@ -8,13 +8,15 @@ from stock_indicators import indicators
 from datetime import datetime
 import pandas as pd
 import numpy as np
+import os
 
-# - 8 hours
-# Min - 5, 15, 30 , 45
-# Hour - 1, 2, 3, 4
+# Const variables to change for data creation
 TIME_VALUE = 30
-TICKER = "ETH/USD"
 TICKER_NAME = "ETH"
+TIME_FRAME_UNIT = TimeFrameUnit.Minute
+
+# Naming for CSV file
+TICKER = "ETH/USD"
 TIMEFRAME = f"{TIME_VALUE}Min"
 
 START_TIME = datetime(2016, 1, 1)
@@ -26,6 +28,10 @@ TIME_FRAME = TimeFrame(TIME_VALUE, TimeFrameUnit.Minute)
 #creator = Data_Creator()
 
 prev_indicator = None
+
+# Create "Data" directory
+if not os.path.exists("Data"):
+    os.makedirs("Data")
 
 # Get historical data
 def get_hist(): #ticker : list, start_time : datetime, end_time : datetime, timeframe : TimeFrame

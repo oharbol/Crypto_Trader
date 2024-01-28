@@ -52,19 +52,14 @@ class TensorboardCallback(BaseCallback):
 SAVE_MODEL = True
 TIMESTEPS = 53290
 DATA_CSV = "Data/Data_Raw_OMA_ETH_30Min"
-SCORE = 20
+SCORE = 50
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
-model_name = "DQN_ETH_sh23_15Min_OMARaw_Mult1_Reward6_norestart_obslevel_score20_3"
+model_name = "DQN_ETH_sh23_30Min_OMARaw_Mult1_Reward6_norestart_obslevel_score50_1"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
-
-# Model Name creation
-# Used for automating model runs
-def create_model_name(model_name, iteraion):
-    return model_name + str(iteraion)
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
@@ -81,12 +76,12 @@ env.reset()
 # Models
 # model = A2C("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = PPO("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
-model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.9, exploration_final_eps=0, batch_size=128, tensorboard_log=logdir)
+model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.9, exploration_final_eps=0.001, batch_size=256, tensorboard_log=logdir)
 # model = RecurrentPPO("MlpLstmPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 
 # 16 Million Timesteps
-for i in range(319):
+for i in range(300):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name= model_name, callback=TensorboardCallback())
     if(SAVE_MODEL):
         model.save(f"{models_dir}/{model_name}_{TIMESTEPS*i}")
