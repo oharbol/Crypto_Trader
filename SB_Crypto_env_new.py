@@ -3,54 +3,47 @@ import numpy as np
 from gymnasium import spaces
 # from collections import deque
 
+# Only used for OneHot encoding
 # import keras
 
 import csv
 
 # IDEA CORNER
 # Create a reward for buying after selling to mimic a short trade
-# * Set a reward with the observer level observation if else chain - tried
-# Add observation for holding (and number of steps held)
-# Remove -0.4 commission, have win/loss reflect commission values, have reward for observer level change for 0 - 0.4 gain
-# Have entire environment keep track of the profit, win/loss, or any other trends to help with trades
-# OneHot encoding: Have 
+# Increase the number of thresholds for observation levels
 
-# Train PPO model on ETH/USD in 5Min, 15Min, 30Min, 1Hour
-
-# ** Reward: Reward based off of difference of last trade
-#           - Reward based off of time holding to sell
-#           - Point system adding and subtracting throughout training process. Gain for positive gl and losing points for negative gl. Game for model
-#           - Game ends once model reaches score, or ends with episode length, both with score as reward
-
-DATA_CSV = "Data/Data_Raw_OMA_ETH_15Min"
-TIMESTEPS = 103100 #296300 #53290
-# TIMESERIES = "1Hour"
+# Global consts
 SHAPE = 23
 CASH = 100
 REWARD_MULT = 1
-SCORE = 20
 
 OBS_LEVEL = True
 CLASSIFICATIONS = 7
 
 # Convert Observation space into floats
-# Return as np array
 def str_to_float(data_list):
     return np.array([float(i) for i in data_list])
 
+
+# Custom Environment Class
 class CryptoEnv(gym.Env):
     """Custom Environment that follows gym interface."""
 
     metadata = {"render_modes": ["human"], "render_fps": 30}
 
-    def __init__(self):
+    def __init__(self, data_csv, timesteps, score = 20):
         super().__init__()
+        # Const data points
+        self.SCORE = score
+        self.TIMESTEPS = timesteps
+        self.DATA_CSV = data_csv
+
         self.truncated = False
-        self.file = open("{}.csv".format(DATA_CSV))
+        self.file = open("{}.csv".format(self.DATA_CSV))
         self.reader = csv.reader(self.file)
         self.profit = 0
         self.done = False
-        self.steps = TIMESTEPS
+        self.steps = timesteps
         self.hold_steps = 0
 
         # Log related code
@@ -64,8 +57,6 @@ class CryptoEnv(gym.Env):
         self.score = 0
         self.restart = 0
 
-        self.wait_buy = 0
-        #self.remove_int = remove_int
         # Define action and observation space
         # They must be gym.spaces objects
         # Example when using discrete actions:
@@ -87,11 +78,10 @@ class CryptoEnv(gym.Env):
             self.holding = True
             self.amount_bought = CASH / self.buy_price
 
-            self.wait_buy = 0
         # SELL
         elif(action == 2 and self.holding):
             self.num_trades += 1
-            self.hold_steps = 0
+            #self.hold_steps = 0
 
             # Sell reward
             gain_loss = self.previous_price - self.buy_price
@@ -99,50 +89,14 @@ class CryptoEnv(gym.Env):
             self.buy_price = 0
             self.holding = False
 
-            # REWARDS
 
-            # Reward 4: Levels of earning (6) yeild flat reward to incentivise 
-            # Combined with reward of -0.01 every hold action
-            # if(realized_gl < -1.4 * REWARD_MULT):
-            #     self.reward = -150
-            # elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
-            #     self.reward = -100
-            # elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
-            #     self.reward = -50
-            # elif(realized_gl > 0 and realized_gl < 0.7 * REWARD_MULT):
-            #     self.reward = 10
-            # elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
-            #     self.reward = 25
-            # else:
-            #     self.reward = 50
-            
-            # # Reward 5: Levels of earning (6) yeild flat reward to incentivise 
-            # # Combined with reward of -0.01 every hold action
-            # # Worse profits yield lower reward, all positive gains are same reward
-            # if(realized_gl < -1.4 * REWARD_MULT):
-            #     self.reward = -150
-            #     self.score -= 3
-            # elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
-            #     self.reward = -100
-            #     self.score -= 2
-            # elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
-            #     self.reward = -50
-            #     self.score -= 1
-            # elif(realized_gl > 0 and realized_gl < 0.7 * REWARD_MULT):
-            #     self.reward = 10
-            #     self.score += 1
-            # elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
-            #     self.reward = 10
-            #     self.score += 2
-            # else:
-            #     self.reward = 10
-            #     self.score += 3
+            # REWARDS
 
             # Reward 6: Levels of earning (6) yeild flat reward to incentivise 
             # Combined with reward of -0.01 every hold action
             # Worse profits yield lower reward, all positive gains are same reward
 
-            # Gabe suggestion: Increase thresholds
+            #TODO: Gabe suggestion: Increase thresholds
             if(realized_gl < -1.4 * REWARD_MULT):
                 self.reward = -15
                 self.score -= 1
@@ -185,22 +139,6 @@ class CryptoEnv(gym.Env):
 
         #     # For some reason this value is needed to create somewhat positive results
         #     self.reward = -0.01 * self.hold_steps
-            
-
-        # Get observation for reward 3
-        # if(OBS_LEVEL):
-        #     self.gl_level = 0
-        #     if(self.holding):
-        #         current_gain_loss = self.previous_price - self.buy_price
-        #         realized_gl = (current_gain_loss * self.amount_bought) - 0.4
-        #         if(realized_gl < 0.4):
-        #             self.gl_level = 0
-        #         elif(realized_gl > 0.4 and realized_gl < 0.7):
-        #             self.gl_level = 1
-        #         elif(realized_gl > 0.7 and realized_gl < 1.4):
-        #             self.gl_level = 2
-        #         else:
-        #             self.gl_level = 3
         
         # Get observation for reward 4
         # Observer Level 1
@@ -226,8 +164,7 @@ class CryptoEnv(gym.Env):
                     self.gl_level = 6
         
         # End game after set time
-        if(self.steps >= TIMESTEPS):
-            #self.file.close()
+        if(self.steps >= self.TIMESTEPS):
             self.done = True
             
             # Set reward
@@ -236,12 +173,12 @@ class CryptoEnv(gym.Env):
             self.score = 0
 
         # Check if game is won
-        if(self.score >= SCORE):
+        if(self.score >= self.SCORE):
             self.done = True
-            self.reward = 100 * SCORE
-        elif(self.score <= -SCORE):
+            self.reward = 100 * self.SCORE
+        elif(self.score <= -self.SCORE):
             self.done = True
-            self.reward = -100 * SCORE
+            self.reward = -100 * self.SCORE
         
         # Get next set of data
         self.observation = next(self.reader)
@@ -249,13 +186,21 @@ class CryptoEnv(gym.Env):
         # Remove current price
         self.previous_price = float(self.observation.pop(0))
 
-        # Remove ma50 and ema50
-        # self.observation.pop(self.remove_int)
-        # self.observation.pop(self.remove_int)
-
         # Add current gain/loss level
         if(OBS_LEVEL):
             self.observation.append(self.gl_level)
+
+        # Add score
+        self.observation.append(self.score)
+
+        # Convert data to float
+        self.observation = str_to_float(self.observation)
+
+        # Saved code for fine tuning and testing different observations
+
+        # Remove ma50 and ema50
+        # self.observation.pop(self.remove_int)
+        # self.observation.pop(self.remove_int)
 
         # # Add Hold to observation
         # if(self.holding):
@@ -274,12 +219,6 @@ class CryptoEnv(gym.Env):
         # gain_loss = self.previous_price - self.buy_price
         # realized_gl = (gain_loss * self.amount_bought) - 0.4
         # self.observation.append(realized_gl)
-        
-        # Add score
-        self.observation.append(self.score)
-
-        # Convert data to float
-        self.observation = str_to_float(self.observation)
 
         # Convert to Onehot encoding
         # self.observation = keras.utils.to_categorical(self.observation, num_classes=CLASSIFICATIONS).reshape((SHAPE,))
@@ -287,6 +226,7 @@ class CryptoEnv(gym.Env):
         return self.observation, self.reward, self.done, self.truncated, info
 
     def reset(self, seed=None, options=None):
+        #TODO: remove the need to create a new observation during reset to make backtesting more accurate
         info = {}
         self.done = False
         self.buy_price = 0
@@ -301,10 +241,10 @@ class CryptoEnv(gym.Env):
         #TODO: Change this to only close and reopen file when end is reached.
         # Still give reward for winning or losing by score
         # End game after set time
-        if(self.steps >= TIMESTEPS):
+        if(self.steps >= self.TIMESTEPS):
             self.steps = 0
             self.file.close()
-            self.file = open("{}.csv".format(DATA_CSV))
+            self.file = open("{}.csv".format(self.DATA_CSV))
             self.reader = csv.reader(self.file)
             next(self.reader)
 
@@ -314,39 +254,45 @@ class CryptoEnv(gym.Env):
         # Remove current price
         self.previous_price = float(self.observation.pop(0))
 
-        # Remove ma50 and ema50
-        # self.observation.pop(self.remove_int)
-        # self.observation.pop(self.remove_int)
-
-        # # Add current gain/loss level
+        # Add current gain/loss level
         if(OBS_LEVEL):
             self.gl_level = 3
             self.observation.append(self.gl_level)
-
-        # # Add Hold to observation
-        # self.observation.append(0)
-
-        # # Add number of steps held
-        # self.observation.append(self.hold_steps)
-            
-        # Add gain loss of observation
-        # gain_loss = self.previous_price - self.buy_price
-        # realized_gl = (gain_loss * self.amount_bought) - 0.4
-        # self.observation.append(realized_gl)
-            
-        # Add wait buy and hold steps to observation
-        # self.observation.append(self.wait_buy)
-        # self.observation.append(self.hold_steps)
             
         # Add score
         self.observation.append(self.score)
 
         # Convert data to float
         self.observation = str_to_float(self.observation)
-
-        # self.observation = keras.utils.to_categorical(self.observation, num_classes=CLASSIFICATIONS).reshape((SHAPE,))
         
         self.done = False
+
+        # Saved code for fine tuning and testing different observations
+
+        # Remove ma50 and ema50
+        # self.observation.pop(self.remove_int)
+        # self.observation.pop(self.remove_int)
+
+        # # Add Hold to observation
+        # if(self.holding):
+        #     self.observation.append(1)
+        # else:
+        #     self.observation.append(0)
+
+        # # Add number of steps held
+        # self.observation.append(self.hold_steps)
+            
+        # Add wait buy and hold steps to observation
+        # self.observation.append(self.wait_buy)
+        # self.observation.append(self.hold_steps)
+            
+        # Add gain loss of observation
+        # gain_loss = self.previous_price - self.buy_price
+        # realized_gl = (gain_loss * self.amount_bought) - 0.4
+        # self.observation.append(realized_gl)
+
+        # Convert to Onehot encoding
+        # self.observation = keras.utils.to_categorical(self.observation, num_classes=CLASSIFICATIONS).reshape((SHAPE,))
 
         return self.observation, info
 

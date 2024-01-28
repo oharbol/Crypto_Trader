@@ -1,18 +1,16 @@
-import gymnasium as gym
 from stable_baselines3 import PPO
 from stable_baselines3 import A2C
 from stable_baselines3 import DQN
 from sb3_contrib import RecurrentPPO, QRDQN, ARS
 import os
+
 # from SB_Crypto_env import CryptoEnv
 from SB_Crypto_env_new import CryptoEnv
+from Backtester import Backtester
 
-import random
-
-import tensorflow as tf
-import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback
 
+# Custom TensorboardCallBack to create custom variables to track
 class TensorboardCallback(BaseCallback):
     """
     Custom callback for plotting additional values in tensorboard.
@@ -46,9 +44,15 @@ class TensorboardCallback(BaseCallback):
         self.logger.record("Supplementary Data/reset_nums", restart)
 
         return True
-    
 
+
+#TODO Add backtester
+    
+# Global consts for training
 SAVE_MODEL = True
+TIMESTEPS = 53290
+DATA_CSV = "Data/Data_Raw_OMA_ETH_30Min"
+SCORE = 20
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
@@ -69,20 +73,7 @@ if not os.path.exists(logdir):
     os.makedirs(logdir)
 
 # Create the environment
-env = CryptoEnv()  # continuous: LunarLanderContinuous-v2
-#load env
-
-'''
-model_path = f"{models_dir}/170000.zip"
-
-model - PPO.load(model_path, env=env)
---------------------------------------------
-'''
-# models_dir_load = "models/PPO_Delta_Segments_ApplePos_Steps2_OGReward"
-
-# model_path = f"{models_dir_load}/490000.zip"
-# model = PPO.load(model_path, env=env)
-
+env = CryptoEnv(DATA_CSV, TIMESTEPS, SCORE)
 
 # Required before you can step the environment
 env.reset()
@@ -94,9 +85,8 @@ model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.9, exploration_f
 # model = RecurrentPPO("MlpLstmPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 
-# 4 Million total timesteps
-TIMESTEPS = 103100 # 296300 #53290
-for i in range(54):
+# 16 Million Timesteps
+for i in range(319):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name= model_name, callback=TensorboardCallback())
     if(SAVE_MODEL):
         model.save(f"{models_dir}/{model_name}_{TIMESTEPS*i}")
