@@ -1,16 +1,13 @@
 # Crypto_Trader
 
 Man-Hours worked on project (After 14DEC2023): 
-```
 - Coding: 22 hours
-- Manual Backtesting: 4 hours
+- Manual Backtesting: 4.5 hours
 - Research: 3.5 hours
-```
 
+Total Man-Hours: 29.5 hours
 
-Total Man-Hours: 29.5
-
-Note: Total Man-Hours does not reflect model training time and automated backtesting
+Note: Total Man-Hours does not reflect model training time and automated forward testing which would contribute 300+ hours alone at this point.
 
 ## Overview and Strategy
 This repo utilizes the machine learning models from Stable Baselines 3 in an attempt to beat the cryptocurrency market. The main models utilized are DQN, PPO and RecurrantPPO. The models are feed with a selection of raw market data, market indicators, and various custom datapoints to give the model an understanding of the current market trend. The model will take these observations and translate them into BUY, SELL, or HOLD actions. The model will not make decisions on the amount of crypto traded. Risk will be determined by the human.
