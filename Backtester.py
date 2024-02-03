@@ -14,13 +14,17 @@ from SB_Crypto_env_new import CryptoEnv
 
 class Backtester():
     
-    def __init__(self, data_csv, time_steps, render_graph, write_data = False, autosave_data = False) -> None:
+    def __init__(self, data_csv, time_steps, render_graph, write_data = False, autosave_data = False, print_data = True) -> None:
         self.DATA_CSV = data_csv
         self.TIME_STEPS = time_steps
         # Used for automation and visual of data
         self.render = render_graph
         self.write_data = write_data
+        self.print_data = print_data
         self.save = autosave_data
+        self.wins = 0
+        self.loss = 0
+        self.prev_profit = 0
 
     # Full backtesting loop against one model
     def Backtest(self, model_name, model_zip, models_dir = "models", backtest_name = "Backtest_Data", score = 20) -> int:
@@ -58,6 +62,17 @@ class Backtester():
 
             data = round(env.profit,2)
 
+            # Gather print data
+            if(self.print_data):
+                # Winning trade
+                if(self.prev_profit < env.profit):
+                    self.wins += 1
+                # Losing trade
+                elif(self.prev_profit > env.profit):
+                    self.loss += 1
+            
+            self.prev_profit = env.profit
+
             # Record profit data
             if(self.write_data):
                 f.write(str(data) + "\n")
@@ -73,8 +88,13 @@ class Backtester():
         if(self.write_data):
             f.close()
 
+        # Print data
+        if(self.print_data):
+            print(f"Win/Loss Rate: {round((self.wins / (self.wins + self.loss)) * 100, 2)}%")
+            
         # Show graph
         if(self.render):
+            plt.title(model_zip)
             plt.plot(x, y)
             plt.show()
 
