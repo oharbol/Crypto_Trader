@@ -1,7 +1,7 @@
 # Crypto_Trader
 
 Man-Hours worked on project (After 14DEC2023): 
-- Coding: 22 hours
+- Coding: 22.5 hours
 - Manual Backtesting: 4.5 hours
 - Research: 3.5 hours
 

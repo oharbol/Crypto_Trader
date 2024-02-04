@@ -12,6 +12,8 @@ from SB_Crypto_env_new import CryptoEnv
 # TODO: Learn about overloading in Python and add compatability to have
 # Backtest method take model directory or the loaded model
 
+# TODO: Make plt a global variable so that user can plot when desired
+
 class Backtester():
     
     def __init__(self, data_csv, time_steps, render_graph, write_data = False, autosave_data = False, print_data = True) -> None:
@@ -115,3 +117,38 @@ class Backtester():
 
         # Returns last datapoint
         return y[-1]
+    
+    # Single step of the Backtest
+    # Requires loop to be created
+    def Single_Backtest(self, env, action):
+
+        # Get observation from step
+        observation, reward, done, truncated, info = env.step(action)
+
+        data = round(env.profit,2)
+
+        # Gather print data
+        if(self.print_data):
+            # Winning trade
+            if(self.prev_profit < env.profit):
+                self.wins += 1
+            # Losing trade
+            elif(self.prev_profit > env.profit):
+                self.loss += 1
+        
+        self.prev_profit = env.profit
+
+        # Fix:
+        # Record profit data
+        # if(self.write_data):
+        #     f.write(str(data) + "\n")
+
+        # Fix:
+        # Add data to matplot for visual graph
+        # y.append(data)
+
+        # Reset as needed
+        if(done):
+            env.reset()
+        
+        return data, observation
