@@ -2,10 +2,10 @@
 
 Man-Hours worked on project (After 14DEC2023): 
 - Coding: 22.5 hours
-- Manual Backtesting: 4.5 hours
+- Manual Backtesting: 5 hours
 - Research: 3.5 hours
 
-Total Man-Hours: 29.5 hours
+Total Man-Hours: 30.5 hours
 
 Note: Total Man-Hours does not reflect model training time and automated forward testing which would contribute 300+ hours alone at this point.
 

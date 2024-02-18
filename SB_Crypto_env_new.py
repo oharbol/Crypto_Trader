@@ -13,7 +13,7 @@ import csv
 # Increase the number of thresholds for observation levels
 
 # Global consts
-SHAPE = 23
+SHAPE = 24
 CASH = 100
 REWARD_MULT = 1
 
@@ -62,7 +62,7 @@ class CryptoEnv(gym.Env):
         # Example when using discrete actions:
         self.action_space = spaces.Discrete(3)
         # Example for using image as input (channel-first; channel-last also works):
-        self.observation_space = spaces.Box(low=-700, high=70000,
+        self.observation_space = spaces.Box(low=-1, high=1,
                                             shape=(SHAPE,), dtype=np.float32)
         
 
@@ -213,6 +213,12 @@ class CryptoEnv(gym.Env):
         # Add score
         self.observation.append(self.score)
 
+        # Add Hold to observation
+        if(self.holding):
+            self.observation.append(1)
+        else:
+            self.observation.append(0)
+
         # Convert data to float
         self.observation = str_to_float(self.observation)
 
@@ -221,12 +227,6 @@ class CryptoEnv(gym.Env):
         # Remove ma50 and ema50
         # self.observation.pop(self.remove_int)
         # self.observation.pop(self.remove_int)
-
-        # # Add Hold to observation
-        # if(self.holding):
-        #     self.observation.append(1)
-        # else:
-        #     self.observation.append(0)
 
         # # Add number of steps held
         # self.observation.append(self.hold_steps)
@@ -282,6 +282,12 @@ class CryptoEnv(gym.Env):
         # Add score
         self.observation.append(self.score)
 
+        # Add Hold to observation
+        if(self.holding):
+            self.observation.append(1)
+        else:
+            self.observation.append(0)
+
         # Convert data to float
         self.observation = str_to_float(self.observation)
         
@@ -293,11 +299,7 @@ class CryptoEnv(gym.Env):
         # self.observation.pop(self.remove_int)
         # self.observation.pop(self.remove_int)
 
-        # # Add Hold to observation
-        # if(self.holding):
-        #     self.observation.append(1)
-        # else:
-        #     self.observation.append(0)
+        
 
         # # Add number of steps held
         # self.observation.append(self.hold_steps)

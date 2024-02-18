@@ -12,17 +12,17 @@ import os
 from sklearn.preprocessing import MinMaxScaler 
 
 # Const variables to change for data creation
-TIME_VALUE = 1
+TIME_VALUE = 30
 TICKER_NAME = "ETH"
-TIME_FRAME_UNIT = TimeFrameUnit.Hour
+TIME_FRAME_UNIT = TimeFrameUnit.Minute
 
 # Naming for CSV file
 TICKER = "ETH/USD"
-TIMEFRAME = f"{TIME_VALUE}Hour"
+TIMEFRAME = f"{TIME_VALUE}Min"
 
 START_TIME = datetime(2016, 1, 1)
 END_TIME = datetime.now()
-TIME_FRAME = TimeFrame(TIME_VALUE, TimeFrameUnit.Hour)
+TIME_FRAME = TimeFrame(TIME_VALUE, TimeFrameUnit.Minute)
 # Min - 5, 15, 30 , 45
 # Hour - 1, 2, 3, 4
 

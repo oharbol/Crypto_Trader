@@ -24,8 +24,8 @@ class Backtester():
         self.write_data = write_data
         self.print_data = print_data
         self.save = autosave_data
-        self.wins = 0
-        self.loss = 0
+        self.wins = 1
+        self.loss = 1
         self.prev_profit = 0
 
     # Full backtesting loop against one model
@@ -120,6 +120,8 @@ class Backtester():
     
     # Single step of the Backtest
     # Requires loop to be created
+
+    # Dont use for now
     def Single_Backtest(self, env, action):
 
         # Get observation from step

@@ -50,14 +50,15 @@ class TensorboardCallback(BaseCallback):
     
 # Global consts for training
 SAVE_MODEL = True
-TIMESTEPS = 26840
-# 1Hour - 26847
-DATA_CSV = "Data/Data_Raw_OMA_ETH_1Hour"
+TIMESTEPS = 13466 #53865
+# 1Hour - 26890
+# 30Min - 53865 - 13466
+DATA_CSV = "Data/Data_Normalized_OMA_ETH_30Min"
 SCORE = 100
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
-model_name = "DQN_ETH_sh23_1Hour_OMARaw_Mult1_Reward7_norestart_obslevel_score100_1"
+model_name = "DQN_ETH_sh24_30MinNorm_OMARaw_Mult1_Reward7_norestart_obslevel_hold_score100_1"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
@@ -82,7 +83,7 @@ model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.95, exploration_
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 
 # 16 Million Timesteps
-for i in range(600):
+for i in range(1200):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name= model_name, callback=TensorboardCallback())
     if(SAVE_MODEL):
         model.save(f"{models_dir}/{model_name}_{TIMESTEPS*i}")
