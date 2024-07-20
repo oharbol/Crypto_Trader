@@ -15,7 +15,7 @@ import csv
 # Global consts
 SHAPE = 24
 CASH = 100
-REWARD_MULT = 1
+REWARD_MULT = 3
 
 OBS_LEVEL = True
 CLASSIFICATIONS = 7
@@ -35,7 +35,7 @@ class CryptoEnv(gym.Env):
         super().__init__()
         # Const data points
         self.SCORE = score
-        self.TIMESTEPS = timesteps
+        self.TIMESTEPS = timesteps #61500
         self.DATA_CSV = data_csv
 
         self.truncated = False
@@ -44,6 +44,7 @@ class CryptoEnv(gym.Env):
         self.profit = 0
         self.done = False
         self.steps = timesteps
+        self.step_scorereset = 0
         self.hold_steps = 0
 
         # Log related code
@@ -56,6 +57,8 @@ class CryptoEnv(gym.Env):
         self.num_trades = 1
         self.score = 0
         self.restart = 0
+        self.score_wins = 0
+        self.score_losses = 0
 
         # Define action and observation space
         # They must be gym.spaces objects
@@ -131,10 +134,10 @@ class CryptoEnv(gym.Env):
                 self.score += 1
             elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
                 self.reward = 10
-                self.score += 1
+                self.score += 2
             else:
                 self.reward = 15
-                self.score += 1
+                self.score += 3
 
 
             # Add realized gains to total profit
@@ -183,8 +186,8 @@ class CryptoEnv(gym.Env):
                 else:
                     self.gl_level = 6
         
-        # End game after set time
-        if(self.steps >= self.TIMESTEPS):
+        # End game after end of data or set time
+        if(self.steps >= self.TIMESTEPS or self.steps - self.step_scorereset >= 15375): #self.TIMESTEPS
             self.done = True
             
             # Set reward
@@ -192,13 +195,29 @@ class CryptoEnv(gym.Env):
 
             self.score = 0
 
+            # Update score reset value
+            self.step_scorereset = self.steps
+
         # Check if game is won
-        if(self.score >= self.SCORE):
+        if(self.score >= 15): #self.SCORE
             self.done = True
             self.reward = 100 * self.SCORE
+
+            # Update score reset value
+            self.step_scorereset = self.steps
+
+            # Used for logging wins from scores
+            self.score_wins += 1
         elif(self.score <= -self.SCORE):
             self.done = True
             self.reward = -100 * self.SCORE
+
+            # Update score reset value
+            self.step_scorereset = self.steps
+
+            # Used for logging losing from scores
+            self.score_losses += 1
+
         
         # Get next set of data
         self.observation = next(self.reader)
@@ -218,6 +237,8 @@ class CryptoEnv(gym.Env):
             self.observation.append(1)
         else:
             self.observation.append(0)
+
+        # Add time remaining
 
         # Convert data to float
         self.observation = str_to_float(self.observation)
@@ -262,7 +283,11 @@ class CryptoEnv(gym.Env):
         # Still give reward for winning or losing by score
         # End game after set time
         if(self.steps >= self.TIMESTEPS):
+            # Reset step counters
             self.steps = 0
+            self.step_scorereset = 0
+
+            # Reset data file
             self.file.close()
             self.file = open("{}.csv".format(self.DATA_CSV))
             self.reader = csv.reader(self.file)

@@ -23,7 +23,7 @@ import csv
 #           - Game ends once model reaches score, or ends with episode length, both with score as reward
 
 DATA_CSV = "Data/Data_Raw_OMA_BTC_5Min"
-TIMESTEPS = 293380
+TIMESTEPS = 61544
 # TIMESERIES = "1Hour"
 SHAPE = 22
 CASH = 100
@@ -179,7 +179,7 @@ class CryptoEnv(gym.Env):
             
 
         # Get next set of data
-        if(self.steps >= TIMESTEPS):
+        if(self.steps >= 61544):
             self.file.close()
             self.file = open("{}.csv".format(DATA_CSV))
             self.reader = csv.reader(self.file)
