@@ -225,45 +225,8 @@ class CryptoEnv(gym.Env):
         # Remove current price
         self.previous_price = float(self.observation.pop(0))
 
-        # Add current gain/loss level
-        if(OBS_LEVEL):
-            self.observation.append(self.gl_level)
-
-        # Add score
-        self.observation.append(self.score) # self.score
-
-        # Add Hold to observation
-        if(self.holding):
-            self.observation.append(1)
-        else:
-            self.observation.append(0)
-
-        # # Add time remaining
-        # self.observation.append(15375 - (self.steps - self.step_scorereset))
-
-        # Convert data to float
-        self.observation = str_to_float(self.observation)
-
-        # Saved code for fine tuning and testing different observations
-
-        # Remove ma50 and ema50
-        # self.observation.pop(self.remove_int)
-        # self.observation.pop(self.remove_int)
-
-        # # Add number of steps held
-        # self.observation.append(self.hold_steps)
-            
-        # Add wait buy and hold steps to observation
-        # self.observation.append(self.wait_buy)
-        # self.observation.append(self.hold_steps)
-            
-        # Add gain loss of observation
-        # gain_loss = self.previous_price - self.buy_price
-        # realized_gl = (gain_loss * self.amount_bought) - 0.4
-        # self.observation.append(realized_gl)
-
-        # Convert to Onehot encoding
-        # self.observation = keras.utils.to_categorical(self.observation, num_classes=CLASSIFICATIONS).reshape((SHAPE,))
+        # Handle creating observation space data
+        self.create_observation()
 
         return self.observation, self.reward, self.done, self.truncated, info
 
@@ -300,11 +263,24 @@ class CryptoEnv(gym.Env):
         # Remove current price
         self.previous_price = float(self.observation.pop(0))
 
+        # Handle creating observation space data
+        self.create_observation(True)
+
+        return self.observation, info
+
+    # Close File
+    def close(self):
+        self.file.close()
+
+    
+    # Handle Observation Space
+    def create_observation(self, is_reset = False):
         # Add current gain/loss level
         if(OBS_LEVEL):
-            self.gl_level = 3
+            if(is_reset):
+                self.gl_level = 3
             self.observation.append(self.gl_level)
-            
+
         # Add score
         self.observation.append(self.score) # self.score
 
@@ -319,16 +295,12 @@ class CryptoEnv(gym.Env):
 
         # Convert data to float
         self.observation = str_to_float(self.observation)
-        
-        self.done = False
 
         # Saved code for fine tuning and testing different observations
 
         # Remove ma50 and ema50
         # self.observation.pop(self.remove_int)
         # self.observation.pop(self.remove_int)
-
-        
 
         # # Add number of steps held
         # self.observation.append(self.hold_steps)
@@ -344,9 +316,3 @@ class CryptoEnv(gym.Env):
 
         # Convert to Onehot encoding
         # self.observation = keras.utils.to_categorical(self.observation, num_classes=CLASSIFICATIONS).reshape((SHAPE,))
-
-        return self.observation, info
-
-    # Close File
-    def close(self):
-        self.file.close()

@@ -64,7 +64,7 @@ SCORE = 20
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
-model_name = "DQN_ETH_sh24_5Min_OMARaw_Reward7_mult3_2"
+model_name = "DQN_ETH_sh24_5Min_OMARaw_Reward7_mult3_3"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
