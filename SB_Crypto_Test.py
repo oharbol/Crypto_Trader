@@ -64,7 +64,7 @@ SCORE = 20
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
-model_name = "DQN_ETH_sh24_5Min_OMARaw_Reward7_mult3_3"
+model_name = "DQN_ETH_sh24_5Min_OMARaw_Reward8_1"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
@@ -89,7 +89,7 @@ model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.95, exploration_
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 
 # 7 Million Timesteps
-for i in range(58):
+for i in range(10):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name= model_name, callback=TensorboardCallback())
     if(SAVE_MODEL):
         model.save(f"{models_dir}/{model_name}_{TIMESTEPS*i}")

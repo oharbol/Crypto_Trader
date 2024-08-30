@@ -1,6 +1,7 @@
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
+import math
 # from collections import deque
 
 # Only used for OneHot encoding
@@ -99,7 +100,6 @@ class CryptoEnv(gym.Env):
             # Combined with reward of -0.01 every hold action
             # Worse profits yield lower reward, all positive gains are same reward
 
-            #TODO: Gabe suggestion: Increase thresholds
             # if(realized_gl < -1.4 * REWARD_MULT):
             #     self.reward = -15
             #     self.score -= 1
@@ -119,25 +119,39 @@ class CryptoEnv(gym.Env):
             #     self.reward = 3
             #     self.score += 1
 
+
             # Reward 7
-            if(realized_gl < -1.4 * REWARD_MULT):
-                self.reward = -30
-                self.score -= 3
-            elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
-                self.reward = -20
-                self.score -= 2
-            elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
-                self.reward = -10
-                self.score -= 1
-            elif(realized_gl > 0 and realized_gl < 0.7 * REWARD_MULT):
-                self.reward = 5
-                self.score += 1
-            elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
-                self.reward = 10
-                self.score += 2
-            else:
-                self.reward = 15
-                self.score += 3
+            # if(realized_gl < -1.4 * REWARD_MULT):
+            #     self.reward = -30
+            #     self.score -= 3
+            # elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
+            #     self.reward = -20
+            #     self.score -= 2
+            # elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
+            #     self.reward = -10
+            #     self.score -= 1
+            # elif(realized_gl > 0 and realized_gl < 0.7 * REWARD_MULT):
+            #     self.reward = 5
+            #     self.score += 1
+            # elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
+            #     self.reward = 10
+            #     self.score += 2
+            # else:
+            #     self.reward = 15
+            #     self.score += 3
+
+            # Reward 8 - Gradiant Reward
+
+            # Protect against divide by zero
+            if(realized_gl != 0):
+                self.reward = (-1 + math.sqrt(1 + 5 * math.exp2(realized_gl)) * 10) / realized_gl
+
+                # Add score when won
+                if(self.reward > 0):
+                    self.score += 1
+                # Subtract score when lost
+                else:
+                    self.score -= 1
 
 
             # Add realized gains to total profit
@@ -163,35 +177,36 @@ class CryptoEnv(gym.Env):
         #     # For some reason this value is needed to create somewhat positive results
         #     self.reward = -0.01 * self.hold_steps
         
+
         # Get observation for reward 4
         # Observer Level 1
-        if(OBS_LEVEL):
-            # Reset to neutral gl observation level
-            self.gl_level = 3
-            if(self.holding):
-                # Calculate realized gain/loss
-                current_gain_loss = self.previous_price - self.buy_price
-                realized_gl = (current_gain_loss * self.amount_bought) - 0.4
-                # Determine gl observation level
-                if(realized_gl < -1.4 * REWARD_MULT):
-                    self.gl_level = 0
-                elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
-                    self.gl_level = 1
-                elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
-                    self.gl_level = 2
-                elif(realized_gl > 0 and realized_gl < 0.7 * REWARD_MULT):
-                    self.gl_level = 4
-                elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
-                    self.gl_level = 5
-                else:
-                    self.gl_level = 6
+        # if(OBS_LEVEL):
+        #     # Reset to neutral gl observation level
+        #     self.gl_level = 3
+        #     if(self.holding):
+        #         # Calculate realized gain/loss
+        #         current_gain_loss = self.previous_price - self.buy_price
+        #         realized_gl = (current_gain_loss * self.amount_bought) - 0.4
+        #         # Determine gl observation level
+        #         if(realized_gl < -1.4 * REWARD_MULT):
+        #             self.gl_level = 0
+        #         elif(realized_gl < -0.7 * REWARD_MULT and realized_gl > -1.4 * REWARD_MULT):
+        #             self.gl_level = 1
+        #         elif(realized_gl < 0 and realized_gl > -0.7 * REWARD_MULT):
+        #             self.gl_level = 2
+        #         elif(realized_gl > 0 and realized_gl < 0.7 * REWARD_MULT):
+        #             self.gl_level = 4
+        #         elif(realized_gl > 0.7 * REWARD_MULT and realized_gl < 1.4 * REWARD_MULT):
+        #             self.gl_level = 5
+        #         else:
+        #             self.gl_level = 6
         
         # End game after end of data or set time
         if(self.steps >= self.TIMESTEPS or self.steps - self.step_scorereset >= 15375): #self.TIMESTEPS
             self.done = True
             
             # Set reward
-            self.reward = self.score * 100
+            self.reward = -50
 
             self.score = 0
 
@@ -199,18 +214,20 @@ class CryptoEnv(gym.Env):
             self.step_scorereset = self.steps
 
         # Check if game is won
-        if(self.score >= self.SCORE): #self.SCORE
+        elif(self.score >= self.SCORE): #self.SCORE
             self.done = True
-            self.reward = 100 * self.SCORE
+            self.reward = 40
 
             # Update score reset value
             self.step_scorereset = self.steps
 
             # Used for logging wins from scores
             self.score_wins += 1
+
+        # Check if game is lost
         elif(self.score <= -self.SCORE):
             self.done = True
-            self.reward = -100 * self.SCORE
+            self.reward = -100
 
             # Update score reset value
             self.step_scorereset = self.steps
@@ -276,15 +293,15 @@ class CryptoEnv(gym.Env):
     # Handle Observation Space
     def create_observation(self, is_reset = False):
         # Add current gain/loss level
-        if(OBS_LEVEL):
-            if(is_reset):
-                self.gl_level = 3
-            self.observation.append(self.gl_level)
+        # if(OBS_LEVEL):
+        #     if(is_reset):
+        #         self.gl_level = 3
+        #     self.observation.append(self.gl_level)
 
         # Add score
         self.observation.append(self.score) # self.score
 
-        # Add Hold to observation
+        # Add if holding to observation
         if(self.holding):
             self.observation.append(1)
         else:
@@ -292,6 +309,11 @@ class CryptoEnv(gym.Env):
 
         # # Add time remaining
         # self.observation.append(15375 - (self.steps - self.step_scorereset))
+
+        # Add gain loss of observation
+        gain_loss = self.previous_price - self.buy_price
+        realized_gl = (gain_loss * self.amount_bought) - 0.4
+        self.observation.append(realized_gl)
 
         # Convert data to float
         self.observation = str_to_float(self.observation)
@@ -308,11 +330,6 @@ class CryptoEnv(gym.Env):
         # Add wait buy and hold steps to observation
         # self.observation.append(self.wait_buy)
         # self.observation.append(self.hold_steps)
-            
-        # Add gain loss of observation
-        # gain_loss = self.previous_price - self.buy_price
-        # realized_gl = (gain_loss * self.amount_bought) - 0.4
-        # self.observation.append(realized_gl)
 
         # Convert to Onehot encoding
         # self.observation = keras.utils.to_categorical(self.observation, num_classes=CLASSIFICATIONS).reshape((SHAPE,))
