@@ -199,7 +199,7 @@ class CryptoEnv(gym.Env):
             self.step_scorereset = self.steps
 
         # Check if game is won
-        if(self.score >= 15): #self.SCORE
+        if(self.score >= self.SCORE): #self.SCORE
             self.done = True
             self.reward = 100 * self.SCORE
 
@@ -230,7 +230,7 @@ class CryptoEnv(gym.Env):
             self.observation.append(self.gl_level)
 
         # Add score
-        self.observation.append(self.score)
+        self.observation.append(self.score) # self.score
 
         # Add Hold to observation
         if(self.holding):
@@ -238,7 +238,8 @@ class CryptoEnv(gym.Env):
         else:
             self.observation.append(0)
 
-        # Add time remaining
+        # # Add time remaining
+        # self.observation.append(15375 - (self.steps - self.step_scorereset))
 
         # Convert data to float
         self.observation = str_to_float(self.observation)
@@ -305,13 +306,16 @@ class CryptoEnv(gym.Env):
             self.observation.append(self.gl_level)
             
         # Add score
-        self.observation.append(self.score)
+        self.observation.append(self.score) # self.score
 
         # Add Hold to observation
         if(self.holding):
             self.observation.append(1)
         else:
             self.observation.append(0)
+
+        # # Add time remaining
+        # self.observation.append(15375 - (self.steps - self.step_scorereset))
 
         # Convert data to float
         self.observation = str_to_float(self.observation)

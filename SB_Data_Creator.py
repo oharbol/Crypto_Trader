@@ -12,7 +12,7 @@ import os
 from sklearn.preprocessing import MinMaxScaler 
 
 # Const variables to change for data creation
-TIME_VALUE = 30
+TIME_VALUE = 15
 TICKER_NAME = "ETH"
 TIME_FRAME_UNIT = TimeFrameUnit.Minute
 

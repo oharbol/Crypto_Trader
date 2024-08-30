@@ -56,15 +56,15 @@ class TensorboardCallback(BaseCallback):
     
 # Global consts for training
 SAVE_MODEL = True
-TIMESTEPS = 61500 #53865 61544
-# 1Hour - 26890
-# 30Min - 53865 - 13466
-DATA_CSV = "Data/Data_Raw_OMA_ETH_30Min"
+TIMESTEPS = 344610
+# 5 MIN - 344610
+# 30Min - 61500
+DATA_CSV = "Data/Data_Raw_OMA_ETH_5Min"
 SCORE = 20
 
 # Naming Convention
 # "Model_Timeframe_data source_SHAPE_Reward Function_added observations_#itteration"
-model_name = "RecPPO_ETH_sh24_30Min_OMARaw_Reward7_mult3_3"
+model_name = "DQN_ETH_sh24_5Min_OMARaw_Reward7_mult3_2"
 models_dir = f"models/{model_name}"
 logdir = "logs"
 
@@ -84,12 +84,12 @@ env.reset()
 # Models
 # model = A2C("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = PPO("MlpPolicy", env, verbose=0, tensorboard_log=logdir)
-# model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.95, exploration_final_eps=0.0005, batch_size=512, tensorboard_log=logdir) # exploration_fraction=0.95 batch_size=256
-model = RecurrentPPO("MlpLstmPolicy", env, verbose=0, tensorboard_log=logdir)
+model = DQN("MlpPolicy", env, verbose=0, exploration_fraction=0.95, exploration_final_eps=0.0005, batch_size=512, tensorboard_log=logdir) # exploration_fraction=0.95 batch_size=256
+# model = RecurrentPPO("MlpLstmPolicy", env, verbose=0, tensorboard_log=logdir)
 # model = QRDQN("MlpPolicy", env, verbose=0, exploration_fraction=0.5, batch_size=128, tensorboard_log=logdir)
 
 # 7 Million Timesteps
-for i in range(33):
+for i in range(58):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name= model_name, callback=TensorboardCallback())
     if(SAVE_MODEL):
         model.save(f"{models_dir}/{model_name}_{TIMESTEPS*i}")
