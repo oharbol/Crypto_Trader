@@ -85,7 +85,7 @@ class CryptoEnv(gym.Env):
         # SELL
         elif(action == 2 and self.holding):
             self.num_trades += 1
-            #self.hold_steps = 0
+            self.hold_steps = 0
 
             # Sell reward
             gain_loss = self.previous_price - self.buy_price
@@ -169,13 +169,20 @@ class CryptoEnv(gym.Env):
                 self.losses += 1
         
         # HOLD
+
+        # Hold 1
+        if(self.holding):
+            self.hold_steps += 1
+            # gain_loss = self.previous_price - self.buy_price
+            # realized_gl = (gain_loss * self.amount_bought) - 0.4
+
+            # For some reason this value is needed to create somewhat positive results
+            self.reward = -0.01 * self.hold_steps
+
+        # Hold 2
         # if(self.holding):
         #     self.hold_steps += 1
-        #     # gain_loss = self.previous_price - self.buy_price
-        #     # realized_gl = (gain_loss * self.amount_bought) - 0.4
 
-        #     # For some reason this value is needed to create somewhat positive results
-        #     self.reward = -0.01 * self.hold_steps
         
 
         # Get observation for reward 4
