@@ -1,5 +1,6 @@
 #Trading and bars libraries
 #from multiprocessing.reduction import steal_handle
+import config
 from alpaca.data.historical import CryptoHistoricalDataClient, StockHistoricalDataClient
 from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
@@ -13,16 +14,16 @@ import os
 from sklearn.preprocessing import MinMaxScaler 
 
 # Const variables to change for data creation
-TIME_VALUE = 15
-TICKER_NAME = "ARKF"#"ETH"
-TIME_FRAME_UNIT = TimeFrameUnit.Minute
+TIME_VALUE = 2
+TICKER_NAME = "NRGV"
+TIME_FRAME_UNIT = TimeFrameUnit.Hour
 
 # Naming for CSV file
 TICKER = TICKER_NAME#"ETH/USD"
-TIMEFRAME = f"{TIME_VALUE}Min"
+TIMEFRAME = f"{TIME_VALUE}Hour"
 
 # START_TIME = datetime(2016, 1, 1)
-START_TIME = datetime(2024, 1, 1)
+START_TIME = datetime(2025, 6, 1)
 END_TIME = datetime.now()
 TIME_FRAME = TimeFrame(TIME_VALUE, TIME_FRAME_UNIT)
 # Min - 5, 15, 30 , 45
@@ -39,7 +40,7 @@ if not os.path.exists("Data"):
 # Get historical data
 def get_hist(): #ticker : list, start_time : datetime, end_time : datetime, timeframe : TimeFrame
     #client = CryptoHistoricalDataClient()
-    client = StockHistoricalDataClient(api_key="PKMVM7U3D252IR21SJJD", secret_key="h57JtkK37c6cUVbFSxaw0wi9KuyemuAAMD7j7opN")
+    client = StockHistoricalDataClient(api_key=config.api_key, secret_key=config.secret_key)
     #t = TimeFrame(5, TimeFrameUnit.Minute)
     
     request_params = StockBarsRequest(#CryptoBarsRequest(
@@ -293,6 +294,14 @@ def get_onehot_ma(row, name):
     else:
         return 1
 
+# Get Supertrend
+def get_supertrend(length, factor):
+    super = hma = indicators.get_super_trend(quotes_list, length, factor)
+    # Convert indictor object data to raw super_trend
+    for index, i in enumerate(super):
+        super[index] = i.super_trend
+    return super
+
 
 
 
@@ -375,17 +384,19 @@ bars = bars.round(2)
 
 # SMOOTHED HEIKIN ASHI
 ha = convert_bars(bars)
-bars["open"] = get_sma(ha, 20, CandlePart.OPEN)
-bars["high"] = get_sma(ha, 20, CandlePart.HIGH)
-bars["low"] = get_sma(ha, 20, CandlePart.LOW)
-bars["close"] = get_sma(ha, 20, CandlePart.CLOSE)
+# bars["open"] = get_sma(ha, 20, CandlePart.OPEN)
+# bars["high"] = get_sma(ha, 20, CandlePart.HIGH)
+# bars["low"] = get_sma(ha, 20, CandlePart.LOW)
+# bars["close"] = get_sma(ha, 20, CandlePart.CLOSE)
 bars["MACD"] = get_MACD(quotes_list)
+bars["super1"] = get_supertrend(21,1)
+bars["super2"] = get_supertrend(14,2)
 
 bars = bars.round(2)
 # Remove all NaN
 bars = bars.dropna()
 
-bars.to_csv("Data/Data_Raw_HAS_{}_{}.csv".format(TICKER_NAME, TIMEFRAME), index=False, header=True)
+bars.to_csv("Data/Data_Raw_SUPER_{}_{}.csv".format(TICKER_NAME, TIMEFRAME), index=False, header=True)
 
 # DEBUGGING CODE
 print("Start Onehot Processing Oscillators\n")

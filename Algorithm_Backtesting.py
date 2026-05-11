@@ -1,4 +1,4 @@
-# Algorithm Backtesting
+# Algorithm 
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -14,17 +14,18 @@ import mplfinance as mpf
 # Backtest Variables
 TIME_VALUE = 15
 TIME_UNIT = "Min"
-TICKER = "FNGU" #"ETH"
+TICKER = "NVDA" #"ETH"
 # Percent of captial risked per trade (0-1)
-#PERCENT_RISK = 0.02
+# PERCENT_RISK = 0.02
 # Risk Reward Ratio (Integers > 0)
-RRR = 20
+RRR = 5
 
 ohlc_df = pd.read_csv(f"Data/Data_Raw_OHLC_{TICKER}_{TIME_VALUE}{TIME_UNIT}.csv")
-has_df = pd.read_csv(f"Data/Data_Raw_HAS_{TICKER}_{TIME_VALUE}{TIME_UNIT}.csv")
+#has_df = pd.read_csv(f"Data/Data_Raw_HAS_{TICKER}_{TIME_VALUE}{TIME_UNIT}.csv")
+super_df = pd.read_csv(f"Data/Data_Raw_SUPER_{TICKER}_{TIME_VALUE}{TIME_UNIT}.csv")
 
 # Constants
-LENGTH = has_df.__len__()
+LENGTH = super_df.__len__()
 INITIAL_CAPITAL = 1000
 # Percent of commission taken per trade
 COMMISSION = 0
@@ -72,7 +73,27 @@ def HAS_Strategy(open, close, has_open, has_close, macd, holding, stoploss):
         return 0
 
     # Determine to sell long position
-    elif(holding and (close < has_close or close > target_price)):                 #holding and (close < has_close or close > target_price or close < stoploss
+    elif(holding and (close < has_close or macd < 0)):                 #holding and (close < has_close or close > target_price or close < stoploss
+        return 1
+
+    # Otherwise hold
+    else:
+        return 2
+    
+# Strategy utilizing Super Trend
+# Long Position: When both super trends are "green" below average open/close price
+# Stop Loss: When one or both super trends are "red" above average open/close price
+def Super_Strategy(open, close, super1, super2, holding):
+    # BUY = 0
+    # SELL = 1
+    # HOLD = 2
+    # Determine if to take long position
+    avg = (open + close) / 2
+    if(not(holding) and avg > super1 and avg > super2):
+        return 0
+
+    # Determine to sell long position
+    elif(holding and (avg < super1 or avg < super2)):
         return 1
 
     # Otherwise hold
@@ -90,6 +111,7 @@ def HAS_Stoploss(open, high, low, close, holding):
 
 
 
+
 # Test read values from CSV file
 # CSV: date, open, high, low, close, volume
 # file = open("{}.csv".format("Data/Data_Raw_HAS_ETH_1Min"))
@@ -103,10 +125,11 @@ list_cash = []
 # Loop through all OHLC data
 for i in range(LENGTH):
     # Get current stoploss value
-    stoploss = HAS_Stoploss(ohlc_df["open"][i], ohlc_df["high"][i], ohlc_df["low"][i], ohlc_df["close"][i], holding)
+    # stoploss = HAS_Stoploss(ohlc_df["open"][i], ohlc_df["high"][i], ohlc_df["low"][i], ohlc_df["close"][i], holding)
 
     # Get action from dedicated strategy
-    action = HAS_Strategy(ohlc_df["open"][i], ohlc_df["high"][i], has_df["open"][i], has_df["close"][i], has_df["MACD"][i], holding, stoploss)
+    # action = HAS_Strategy(ohlc_df["open"][i], ohlc_df["high"][i], has_df["open"][i], has_df["close"][i], has_df["MACD"][i], holding, stoploss)
+    action = Super_Strategy(ohlc_df["open"][i], ohlc_df["close"][i], super_df["super1"][i], super_df["super2"][i], holding)
 
     # Buy
     if(action == 0):
@@ -114,7 +137,7 @@ for i in range(LENGTH):
         holding = True
 
         # Calculate target price
-        target_price = holding_price * (1 + ((holding_price - stoploss) * RRR) / stoploss)###########################
+        # target_price = holding_price * (1 + ((holding_price - stoploss) * RRR) / stoploss)###########################
         #print("BUY: ", ohlc_df["date"][i])
     # SELL
     elif(action == 1):
